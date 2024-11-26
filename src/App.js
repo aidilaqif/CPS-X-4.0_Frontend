@@ -1,11 +1,11 @@
 import React from "react";
 import DroneInterface from "./components/DroneInterface";
-import NavigationTab from "./components/NavigationTab";
+// import NavigationTab from "./components/NavigationTab";
 
 function App() {
   return (
     <div>
-      <NavigationTab />
+      {/* <NavigationTab /> */}
       <DroneInterface />
     </div>
   );
