@@ -88,6 +88,26 @@ const DroneInterface = () => {
     }
   };
 
+  // Add this new function in the DroneInterface component, after the calibrateDrone function:
+  const saveLogs = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/save_logs`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (data.status === "success") {
+        setError("Logs saved successfully!");
+        // Clear success message after 3 seconds
+        setTimeout(() => setError(""), 3000);
+      } else {
+        setError(data.message || "Failed to save logs");
+      }
+    } catch (err) {
+      setError("Failed to save logs: " + err.message);
+    }
+  };
+
   return (
     <div className="container">
       <div className="card">
@@ -110,7 +130,6 @@ const DroneInterface = () => {
           >
             {connected ? "Disconnect" : "Connect"}
           </button>
-
           <button
             className="button"
             onClick={calibrateDrone}
@@ -122,7 +141,6 @@ const DroneInterface = () => {
           >
             Calibrate IMU
           </button>
-
           <div className="controls">
             <div></div>
             <button
@@ -196,7 +214,18 @@ const DroneInterface = () => {
             </button>
             <div></div>
           </div>
-
+          {/*  Add this button just before the emergency stop button in the JSX: */}
+          <button
+            className="button"
+            onClick={saveLogs}
+            disabled={!connected}
+            style={{
+              backgroundColor: "#2ecc71",
+              marginBottom: "10px",
+            }}
+          >
+            Save Movement Logs
+          </button>
           <button
             className="button danger"
             onClick={() => sendCommand("emergency")}
