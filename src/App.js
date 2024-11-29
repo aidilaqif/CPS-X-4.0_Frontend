@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import DroneInterface from './components/DroneInterface';
 import NavigationTab from './components/navigation/NavigationTab';
 import ItemManagement from './components/items/ItemManagement';
+import LocationManagement from './components/locations/LocationManagement';
 import './assets/styles/index.css';
 
 // Placeholder components for other pages
@@ -15,14 +16,14 @@ import './assets/styles/index.css';
 //   </div>
 // );
 
-const Locations = () => (
-  <div className="page-container">
-    <section className="section">
-      <h1>Locations</h1>
-      <p>Locations management interface will be implemented here</p>
-    </section>
-  </div>
-);
+// const Locations = () => (
+//   <div className="page-container">
+//     <section className="section">
+//       <h1>Locations</h1>
+//       <p>Locations management interface will be implemented here</p>
+//     </section>
+//   </div>
+// );
 
 const ExportData = () => (
   <div className="page-container">
@@ -45,7 +46,7 @@ function App() {
       case 'items':
         return <ItemManagement />;
       case 'locations':
-        return <Locations />;
+        return <LocationManagement />;
       case 'exports':
         return <ExportData />;
       default:
