@@ -7,6 +7,8 @@ import {
   Plus,
   X,
   Trash2,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 
 const ItemManagement = () => {
@@ -24,6 +26,8 @@ const ItemManagement = () => {
   });
   const [locations, setLocations] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedRows, setExpandedRows] = useState(new Set());
+  const [itemDetails, setItemDetails] = useState({})
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
     itemId: null,
@@ -63,9 +67,6 @@ const ItemManagement = () => {
         const itemsData = await itemsResponse.json();
         const locationsData = await locationsResponse.json();
 
-        console.log("Items Data:", itemsData);
-        console.log("Locations Data:", locationsData);
-
         setItems(itemsData.data);
         setLocations(locationsData.data);
         setError(null);
@@ -79,6 +80,34 @@ const ItemManagement = () => {
 
     fetchData();
   }, [API_BASE_URL]);
+
+  const fetchItemDetails = async (itemId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/items/${itemId}/exists`);
+      if (!response.ok) throw new Error("Failed to fetch item details");
+      const data = await response.json();
+      setItemDetails(prev => ({
+        ...prev,
+        [itemId]: data.item
+      }));
+    } catch (err) {
+      console.error("Error fetching item details:", err);
+      setError("Failed to fetch item details");
+    }
+  };
+
+  const handleRowExpand = async (itemId) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (expandedRows.has(itemId)) {
+      newExpandedRows.delete(itemId);
+    } else {
+      newExpandedRows.add(itemId);
+      if (!itemDetails[itemId]) {
+        await fetchItemDetails(itemId);
+      }
+    }
+    setExpandedRows(newExpandedRows);
+  };
 
   const getUniqueValues = (field) => {
     return [...new Set(items.map((item) => item[field]))].filter(Boolean);
@@ -323,6 +352,9 @@ const ItemManagement = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Expand
+                </th>
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("label_id")}
@@ -375,43 +407,79 @@ const ItemManagement = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedItems.map((item) => (
-                <tr key={item.label_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {item.label_id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.label_type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.location_id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${formatStatus(
-                        item.status
-                      )}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(item.last_scan_time)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() =>
-                        setDeleteConfirm({
-                          isOpen: true,
-                          itemId: item.label_id,
-                          itemLabel: item.label_id,
-                        })
-                      }
-                      className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-100"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
+                <React.Fragment key={item.label_id}>
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button onClick={() => handleRowExpand(item.label_id)}>
+                        {expandedRows.has(item.label_id) ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.label_id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {item.label_type}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {item.location_id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${formatStatus(
+                          item.status
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(item.last_scan_time)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() =>
+                          setDeleteConfirm({
+                            isOpen: true,
+                            itemId: item.label_id,
+                            itemLabel: item.label_id,
+                          })
+                        }
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedRows.has(item.label_id) && (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-4">
+                        {itemDetails[item.label_id] ? (
+                          <div>
+                            {item.label_type === 'Roll' ? (
+                              <>
+                                <p>Name: {itemDetails[item.label_id].details?.name}</p>
+                                <p>Size (mm): {itemDetails[item.label_id].details?.size_mm}</p>
+                              </>
+                            ) : (
+                              <>
+                                <p>Pallet Number: {itemDetails[item.label_id].details?.plt_number}</p>
+                                <p>Quantity: {itemDetails[item.label_id].details?.quantity}</p>
+                                <p>Work Order ID: {itemDetails[item.label_id].details?.work_order_id}</p>
+                                <p>Total Pieces: {itemDetails[item.label_id].details?.total_pieces}</p>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <p>Loading details...</p>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
