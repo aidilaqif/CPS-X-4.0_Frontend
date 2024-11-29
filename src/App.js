@@ -4,35 +4,8 @@ import DroneInterface from './components/DroneInterface';
 import NavigationTab from './components/navigation/NavigationTab';
 import ItemManagement from './components/items/ItemManagement';
 import LocationManagement from './components/locations/LocationManagement';
+import Export from './components/exports/Export';
 import './assets/styles/index.css';
-
-// Placeholder components for other pages
-// const ItemManagement = () => (
-//   <div className="page-container">
-//     <section className="section">
-//       <h1>Item Management</h1>
-//       <p>Item management interface will be implemented here</p>
-//     </section>
-//   </div>
-// );
-
-// const Locations = () => (
-//   <div className="page-container">
-//     <section className="section">
-//       <h1>Locations</h1>
-//       <p>Locations management interface will be implemented here</p>
-//     </section>
-//   </div>
-// );
-
-const ExportData = () => (
-  <div className="page-container">
-    <section className="section">
-      <h1>Export Data</h1>
-      <p>Data export interface will be implemented here</p>
-    </section>
-  </div>
-);
 
 
 function App() {
@@ -48,7 +21,7 @@ function App() {
       case 'locations':
         return <LocationManagement />;
       case 'exports':
-        return <ExportData />;
+        return <Export />;
       default:
         return <DroneInterface />;
     }
