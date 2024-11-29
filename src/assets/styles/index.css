@@ -1,6 +1,4 @@
-/* src/assets/styles/index.css */
-
-/* Base styles */
+/* CSS Variables for theming */
 :root {
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
@@ -11,6 +9,7 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Base styles */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
@@ -35,7 +34,3 @@ body {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
-
-/* Import component styles */
-@import './components/NavigationTab.css';
-@import './layout/App.css';

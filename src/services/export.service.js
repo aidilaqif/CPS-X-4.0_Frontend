@@ -1,4 +1,3 @@
-// src/services/export.service.js
 import { endpoints } from '../config/api.config';
 import * as XLSX from 'xlsx';
 
@@ -93,5 +92,25 @@ export const exportService = {
       console.error('Export error:', error);
       throw error;
     }
-  }
+  },
+
+  async getPreviewData() {
+    try {
+      const response = await fetch(endpoints.export.csv);
+      if (!response.ok) {
+        throw new Error('Failed to fetch preview data');
+      }
+      
+      const data = await response.json();
+      return {
+        labels: (data.labels || []).slice(0, 5),  // Preview first 5 items
+        rolls: (data.rolls || []).slice(0, 5),    // Preview first 5 rolls
+        pallets: (data.pallets || []).slice(0, 5) // Preview first 5 pallets
+      };
+    } catch (error) {
+      console.error('Preview error:', error);
+      throw error;
+    }
+  },
+
 };

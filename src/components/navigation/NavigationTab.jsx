@@ -1,4 +1,3 @@
-// src/components/navigation/NavigationTab.jsx
 import React from 'react';
 import { 
   ChevronLeft, 
@@ -8,8 +7,8 @@ import {
   MapPin, 
   FileDown 
 } from 'lucide-react';
+import '../../assets/styles/components/NavigationTab.css';
 
-// Add isCollapsed and setIsCollapsed to props
 const NavigationTab = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
   const navigationItems = [
     { id: 'drone', label: 'Drone Interface', icon: <LucidePlane size={20} /> },
@@ -19,14 +18,14 @@ const NavigationTab = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed })
   ];
 
   return (
-    <nav className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="sidebar-header">
-        <div className="logo-container">
+    <nav className={`nav-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="nav-header">
+        <div className="nav-logo-container">
           <span className="nav-icon">🚁</span>
-          <span className="logo-text">CPS-X 4.0</span>
+          <span className="nav-logo-text">CPS-X 4.0</span>
         </div>
         <button 
-          className="toggle-button"
+          className="nav-toggle-button"
           onClick={() => setIsCollapsed(!isCollapsed)}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -39,7 +38,7 @@ const NavigationTab = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed })
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`nav-button ${activeTab === item.id ? 'active' : ''}`}
+            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
           >
             <span className="nav-icon">{item.icon}</span>
             <span className="nav-text">{item.label}</span>
