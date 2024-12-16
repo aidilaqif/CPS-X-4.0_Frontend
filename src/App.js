@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,33 +10,52 @@ import AutoPilot from "./components/AutoPilot";
 import "./App.css";
 
 function App() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   return (
     <Router>
-      <div>
-        <nav className="navigation">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-            end
-          >
-            Manual Control
-          </NavLink>
-          <NavLink
-            to="/autopilot"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            AutoPilot
-          </NavLink>
-        </nav>
+      <div className="app-container">
+        {/* Sidebar */}
+        <div className={`sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
+          <div className="sidebar-header">
+            <h1 className="sidebar-title">CPS-X DragonFly 4.0 </h1>
+            <button
+              className="collapse-button"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            >
+              {isSidebarCollapsed ? "→" : "←"}
+            </button>
+          </div>
+          <nav className="sidebar-nav">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive ? "sidebar-link active" : "sidebar-link"
+              }
+              end
+            >
+              <span className="sidebar-icon">🎮</span>
+              <span className="link-text">Manual Control</span>
+            </NavLink>
+            <NavLink
+              to="/autopilot"
+              className={({ isActive }) =>
+                isActive ? "sidebar-link active" : "sidebar-link"
+              }
+            >
+              <span className="sidebar-icon">🤖</span>
+              <span className="link-text">AutoPilot</span>
+            </NavLink>
+          </nav>
+        </div>
 
-        <Routes>
-          <Route path="/" element={<DroneInterface />} />
-          <Route path="/autopilot" element={<AutoPilot />} />
-        </Routes>
+        {/* Main Content */}
+        <div className={`main-content ${isSidebarCollapsed ? "expanded" : ""}`}>
+          <Routes>
+            <Route path="/" element={<DroneInterface />} />
+            <Route path="/autopilot" element={<AutoPilot />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
