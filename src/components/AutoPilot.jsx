@@ -36,7 +36,6 @@ const AutoPilot = () => {
     setSelectedFile(file);
     setFlightPlanLoaded(false);
 
-    // Preview the flight plan
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -116,18 +115,6 @@ const AutoPilot = () => {
     }
   };
 
-  const emergencyStop = async () => {
-    try {
-      await fetch(`${API_BASE}/force_emergency`, {
-        method: "POST",
-      });
-      setIsExecuting(false);
-      setError("EMERGENCY STOP ACTIVATED");
-    } catch (err) {
-      setError("Failed to execute emergency stop");
-    }
-  };
-
   const calibrateDrone = async () => {
     if (!connected) {
       setError("Drone must be connected to calibrate");
@@ -157,147 +144,163 @@ const AutoPilot = () => {
     }
   };
 
+  const emergencyStop = async () => {
+    try {
+      await fetch(`${API_BASE}/force_emergency`, {
+        method: "POST",
+      });
+      setIsExecuting(false);
+      setError("EMERGENCY STOP ACTIVATED");
+    } catch (err) {
+      setError("Failed to execute emergency stop");
+    }
+  };
+
   return (
     <div className="container">
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            Tello Drone AutoPilot
-            <div className="status-bar">
-              <span className={connected ? "connected" : "disconnected"}>
-                {connected ? "● Connected" : "○ Disconnected"}
-              </span>
-              <span>Battery: {battery}%</span>
-              {isExecuting && (
-                <span className="executing">● AutoPilot Active</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="autopilot-controls">
-          {/* Add Calibration Section */}
-          <div className="calibration-section">
-            <button
-              className={`button calibrate ${calibrating ? "calibrating" : ""}`}
-              onClick={calibrateDrone}
-              disabled={!connected || isExecuting || calibrating}
-            >
-              {calibrating ? "Calibrating..." : "Calibrate IMU"}
-            </button>
-            <div className="calibration-note">
-              Note: Calibrate before starting AutoPilot for better stability
-            </div>
-          </div>
-
-          <div className="file-upload">
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleFileSelect}
-              disabled={!connected || isExecuting}
-            />
-            <button
-              className="button"
-              onClick={uploadFlightPlan}
-              disabled={!selectedFile || !connected || isExecuting}
-            >
-              Upload Flight Plan
-            </button>
-          </div>
-
-          <div className="execution-controls">
-            <button
-              className={`button ${isExecuting ? "danger" : "primary"}`}
-              onClick={isExecuting ? stopAutopilot : startAutopilot}
-              disabled={!connected || !flightPlanLoaded}
-            >
-              {isExecuting ? "Stop AutoPilot" : "Start AutoPilot"}
-            </button>
-
-            <button
-              className="button emergency-stop"
-              onClick={emergencyStop}
-              disabled={!connected}
-            >
-              EMERGENCY STOP
-            </button>
-          </div>
-
-          {flightPlanPreview && (
-            <div className="flight-plan-preview">
-              <h3>Flight Plan Preview</h3>
-              <div className="preview-content">
-                <p>
-                  Total Commands:{" "}
-                  {flightPlanPreview.session_summary.total_commands}
-                </p>
-                <p>
-                  Battery Required:{" "}
-                  {flightPlanPreview.session_summary.battery_start -
-                    flightPlanPreview.session_summary.battery_end}
-                  %
-                </p>
-                <p>Commands:</p>
-                <div className="command-list">
-                  {Object.entries(
-                    flightPlanPreview.session_summary.command_breakdown
-                  ).map(([command, count]) => (
-                    <div key={command} className="command-item">
-                      {command}: {count}x
-                    </div>
-                  ))}
-                </div>
+      <div className="dashboard-grid">
+        {/* AutoPilot Control Card */}
+        <div className="card control-card">
+          <div className="card-header">
+            <div className="card-title">
+              Tello Drone AutoPilot
+              <div className="status-bar">
+                <span className={connected ? "connected" : "disconnected"}>
+                  {connected ? "● Connected" : "○ Disconnected"}
+                </span>
+                <span>Battery: {battery}%</span>
+                {isExecuting && (
+                  <span className="executing">● AutoPilot Active</span>
+                )}
               </div>
             </div>
-          )}
-        </div>
-
-        {error && (
-          <div
-            className={`alert ${
-              error.includes("success")
-                ? "success"
-                : error.includes("Calibrating")
-                ? "info"
-                : error.includes("EMERGENCY")
-                ? "emergency"
-                : ""
-            }`}
-          >
-            {error}
           </div>
-        )}
+
+          <div className="autopilot-controls">
+            {/* Calibration Section */}
+            <div className="calibration-section">
+              <button
+                className={`button calibrate ${calibrating ? "calibrating" : ""}`}
+                onClick={calibrateDrone}
+                disabled={!connected || isExecuting || calibrating}
+              >
+                {calibrating ? "Calibrating..." : "Calibrate IMU"}
+              </button>
+              <div className="calibration-note">
+                Note: Calibrate before starting AutoPilot for better stability
+              </div>
+            </div>
+
+            {/* File Upload Section */}
+            <div className="file-upload">
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleFileSelect}
+                disabled={!connected || isExecuting}
+              />
+              <button
+                className="button"
+                onClick={uploadFlightPlan}
+                disabled={!selectedFile || !connected || isExecuting}
+              >
+                Upload Flight Plan
+              </button>
+            </div>
+
+            {/* Execution Controls */}
+            <div className="execution-controls">
+              <button
+                className={`button ${isExecuting ? "danger" : "primary"}`}
+                onClick={isExecuting ? stopAutopilot : startAutopilot}
+                disabled={!connected || !flightPlanLoaded}
+              >
+                {isExecuting ? "Stop AutoPilot" : "Start AutoPilot"}
+              </button>
+            </div>
+
+            {/* Flight Plan Preview */}
+            {flightPlanPreview && (
+              <div className="flight-plan-preview">
+                <h3>Flight Plan Preview</h3>
+                <div className="preview-content">
+                  <p>Total Commands: {flightPlanPreview.session_summary.total_commands}</p>
+                  <p>
+                    Battery Required:{" "}
+                    {flightPlanPreview.session_summary.battery_start -
+                      flightPlanPreview.session_summary.battery_end}
+                    %
+                  </p>
+                  <p>Commands:</p>
+                  <div className="command-list">
+                    {Object.entries(
+                      flightPlanPreview.session_summary.command_breakdown
+                    ).map(([command, count]) => (
+                      <div key={command} className="command-item">
+                        {command}: {count}x
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Camera Feed Card */}
+        <div className="card camera-card">
+          <div className="card-header">
+            <h2 className="card-title">Drone Camera Feed</h2>
+          </div>
+          <div className="video-feed">
+            {connected ? (
+              <img src={`${API_BASE}/video_feed`} alt="Drone camera feed" />
+            ) : (
+              <div className="placeholder">Camera feed unavailable</div>
+            )}
+          </div>
+        </div>
+
+        {/* QR Result Card - Full Width */}
+        <div className="card qr-result-card">
+          <div className="card-header">
+            <h2 className="card-title">QR Code Detection</h2>
+          </div>
+          <div className="qr-result">
+            {qrResult ? (
+              <>
+                <div>QR Code Detected</div>
+                <div>Content: {qrResult}</div>
+              </>
+            ) : (
+              "No QR code detected"
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">Drone Camera Feed</h2>
-        </div>
-        <div className="video-feed">
-          {connected ? (
-            <img src={`${API_BASE}/video_feed`} alt="Drone camera feed" />
-          ) : (
-            <div className="placeholder">Camera feed unavailable</div>
-          )}
-        </div>
-      </div>
+      {/* Emergency Stop Button - Full Width */}
+      <button
+        className="button danger force-emergency"
+        onClick={emergencyStop}
+        disabled={!connected}
+      >
+        FORCE EMERGENCY STOP
+      </button>
 
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">QR Code Detection</h2>
+      {error && (
+        <div className={`alert ${
+          error.includes("success") 
+            ? "success" 
+            : error.includes("Calibrating")
+            ? "info"
+            : error.includes("EMERGENCY")
+            ? "emergency"
+            : "error"
+        }`}>
+          {error}
         </div>
-        <div className="qr-result">
-          {qrResult ? (
-            <>
-              <div>QR Code Detected</div>
-              <div>Content: {qrResult}</div>
-            </>
-          ) : (
-            "No QR code detected"
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
