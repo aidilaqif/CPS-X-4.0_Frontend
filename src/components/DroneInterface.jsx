@@ -8,7 +8,52 @@ const DroneInterface = () => {
   const [error, setError] = useState("");
   const [calibrating, setCalibrating] = useState(false);
 
-  const API_BASE = "http://localhost:5000";
+  // Distance states for each direction
+  const [distances, setDistances] = useState({
+    up: "20",
+    down: "20",
+    left: "20",
+    right: "20",
+    forward: "20",
+    back: "20",
+  });
+
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+  // Validation function for distances
+  const validateDistance = (value) => {
+    const num = parseInt(value);
+    return !isNaN(num) && num > 0 && num <= 100 && num % 5 === 0;
+  };
+
+  // Handle distance input change
+  const handleDistanceChange = (direction, value) => {
+    // Only allow numbers
+    if (value === "" || /^\d+$/.test(value)) {
+      setDistances((prev) => ({
+        ...prev,
+        [direction]: value,
+      }));
+    }
+  };
+
+  // Handle distance input blur (for validation)
+  const handleDistanceBlur = (direction) => {
+    const value = distances[direction];
+    if (value === "") {
+      setDistances((prev) => ({ ...prev, [direction]: "20" })); // Default value
+      return;
+    }
+
+    const num = parseInt(value);
+    if (!validateDistance(num)) {
+      setError(
+        `Invalid distance for ${direction}. Must be a multiple of 5 and not exceed 100`
+      );
+      setDistances((prev) => ({ ...prev, [direction]: "20" })); // Reset to default
+      setTimeout(() => setError(""), 3000);
+    }
+  };
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -25,7 +70,7 @@ const DroneInterface = () => {
 
     const intervalId = setInterval(fetchStatus, 1000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [API_BASE]);
 
   const handleConnect = async () => {
     try {
@@ -52,24 +97,23 @@ const DroneInterface = () => {
 
   const sendCommand = async (cmd) => {
     try {
-      const response = await fetch(`${API_BASE}/command/${cmd}`);
+      const url = new URL(`${API_BASE}/command/${cmd}`);
+
+      // Add distance parameter for movement commands
+      if (!["takeoff", "land", "emergency"].includes(cmd)) {
+        url.searchParams.append("distance", distances[cmd]);
+      }
+
+      const response = await fetch(url);
       const data = await response.json();
+
       if (data.status === "error") {
         setError(data.message);
       } else {
-        setError(""); // Clear error on successful command
+        setError("");
       }
     } catch (err) {
       setError(`Failed to execute command: ${cmd}`);
-    }
-  };
-
-  const forceEmergencyStop = async () => {
-    try {
-      await fetch(`${API_BASE}/force_emergency`, { method: "POST" });
-      setError("EMERGENCY STOP ACTIVATED");
-    } catch (err) {
-      setError("Failed to execute emergency stop");
     }
   };
 
@@ -102,6 +146,15 @@ const DroneInterface = () => {
     }
   };
 
+  const forceEmergencyStop = async () => {
+    try {
+      await fetch(`${API_BASE}/force_emergency`, { method: "POST" });
+      setError("EMERGENCY STOP ACTIVATED");
+    } catch (err) {
+      setError("Failed to execute emergency stop");
+    }
+  };
+
   const saveLogs = async () => {
     try {
       const response = await fetch(`${API_BASE}/save_logs`, {
@@ -119,6 +172,19 @@ const DroneInterface = () => {
       setError("Failed to save logs: " + err.message);
     }
   };
+
+  const renderDistanceInput = (direction) => (
+    <input
+      type="text"
+      className="distance-input"
+      value={distances[direction]}
+      onChange={(e) => handleDistanceChange(direction, e.target.value)}
+      onBlur={() => handleDistanceBlur(direction)}
+      disabled={!connected}
+      placeholder="Distance"
+      title="Enter a multiple of 5 (max 100)"
+    />
+  );
 
   return (
     <div className="container">
@@ -158,71 +224,93 @@ const DroneInterface = () => {
 
             <div className="controls">
               <div></div>
-              <button
-                className="button"
-                onClick={() => sendCommand("takeoff")}
-                disabled={!connected}
-              >
-                Take Off
-              </button>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("takeoff")}
+                  disabled={!connected}
+                >
+                  Take Off
+                </button>
+              </div>
               <div></div>
 
-              <button
-                className="button"
-                onClick={() => sendCommand("left")}
-                disabled={!connected}
-              >
-                Left
-              </button>
-              <button
-                className="button"
-                onClick={() => sendCommand("up")}
-                disabled={!connected}
-              >
-                Up
-              </button>
-              <button
-                className="button"
-                onClick={() => sendCommand("right")}
-                disabled={!connected}
-              >
-                Right
-              </button>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("left")}
+                  disabled={!connected}
+                >
+                  Left
+                </button>
+                {renderDistanceInput("left")}
+              </div>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("up")}
+                  disabled={!connected}
+                >
+                  Up
+                </button>
+                {renderDistanceInput("up")}
+              </div>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("right")}
+                  disabled={!connected}
+                >
+                  Right
+                </button>
+                {renderDistanceInput("right")}
+              </div>
 
               <div></div>
-              <button
-                className="button"
-                onClick={() => sendCommand("down")}
-                disabled={!connected}
-              >
-                Down
-              </button>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("down")}
+                  disabled={!connected}
+                >
+                  Down
+                </button>
+                {renderDistanceInput("down")}
+              </div>
               <div></div>
 
-              <button
-                className="button"
-                onClick={() => sendCommand("forward")}
-                disabled={!connected}
-              >
-                Forward
-              </button>
-              <button
-                className="button"
-                onClick={() => sendCommand("back")}
-                disabled={!connected}
-              >
-                Back
-              </button>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("forward")}
+                  disabled={!connected}
+                >
+                  Forward
+                </button>
+                {renderDistanceInput("forward")}
+              </div>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("back")}
+                  disabled={!connected}
+                >
+                  Back
+                </button>
+                {renderDistanceInput("back")}
+              </div>
               <div></div>
 
               <div></div>
-              <button
-                className="button"
-                onClick={() => sendCommand("land")}
-                disabled={!connected}
-              >
-                Land
-              </button>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("land")}
+                  disabled={!connected}
+                >
+                  Land
+                </button>
+              </div>
               <div></div>
             </div>
 
@@ -259,23 +347,34 @@ const DroneInterface = () => {
           </div>
         </div>
 
-        {/* QR Result Card - Full Width */}
+        {/* QR Result Card */}
         <div className="card qr-result-card">
           <div className="card-header">
-            <h2 className="card-title">QR Code Result</h2>
+            <h2 className="card-title">QR Code Detection</h2>
           </div>
-          <div className="qr-result">{qrResult || "No QR code detected"}</div>
+          <div className="qr-result">
+            {qrResult ? (
+              <>
+                <div>QR Code Detected</div>
+                <div>Content: {qrResult}</div>
+              </>
+            ) : (
+              "No QR code detected"
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Force Emergency Stop - Full Width */}
+      {/* Force Emergency Stop */}
       <button
         className="button danger force-emergency"
         onClick={forceEmergencyStop}
+        disabled={!connected}
       >
         FORCE EMERGENCY STOP
       </button>
 
+      {/* Error/Status Messages */}
       {error && (
         <div
           className={`alert ${
