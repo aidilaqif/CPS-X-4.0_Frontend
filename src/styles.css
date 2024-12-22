@@ -582,3 +582,35 @@ body {
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
+
+.direction-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.distance-input {
+  width: 60px;
+  padding: 0.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 0.9rem;
+  background-color: var(--background-color);
+}
+
+.distance-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Update the controls grid for better spacing */
+.controls {
+  margin: 1rem auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 400px;
+  align-items: center;
+}
