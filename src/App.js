@@ -1,11 +1,14 @@
 // src/App.js
 import React, { useState } from 'react';
+import { BrowserRouter as Router } from "react-router-dom";
 import DroneInterface from './components/DroneInterface';
+import AutoPilot from "./components/AutoPilot";
 import NavigationTab from './components/navigation/NavigationTab';
 import ItemManagement from './components/items/ItemManagement';
 import LocationManagement from './components/locations/LocationManagement';
 import Export from './components/exports/Export';
 import './assets/styles/index.css';
+import "./App.css";
 
 
 function App() {
@@ -16,6 +19,8 @@ function App() {
     switch (currentPage) {
       case 'drone':
         return <DroneInterface />;
+      case "autopilot":
+        return <AutoPilot />;
       case 'items':
         return <ItemManagement />;
       case 'locations':
