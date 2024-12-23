@@ -24,13 +24,31 @@ body {
     Ubuntu, Cantarell, sans-serif;
 }
 
+/* Layout Containers */
 .container {
   max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1.5rem;
 }
 
-/* Navigation */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+  padding: 2rem;
+  background-color: var(--background-color);
+}
+
+.main-content.expanded {
+  margin-left: 60px;
+}
+
+/* Navigation Styles*/
 .navigation {
   background-color: var(--card-background);
   padding: 1rem;
@@ -272,7 +290,36 @@ body {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-card,
+  .camera-card,
+  .qr-result-card {
+    grid-column: 1;
+  }
+}
+
 @media (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+  }
+
+  .sidebar .link-text,
+  .sidebar .sidebar-title {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 60px;
+  }
+
+  .collapse-button {
+    display: none;
+  }
+
   .container {
     padding: 0 1rem;
   }
@@ -481,8 +528,8 @@ body {
   padding: 0.5rem;
   border-radius: var(--radius-md);
   transition: all 0.2s ease;
-  font-size: 1.5rem; /* Makes the arrow bigger */
-  font-weight: bold; /* Makes the arrow thicker */
+  font-size: 1.5rem;
+  font-weight: bold;
   width: 32px;
   height: 32px;
   display: flex;
@@ -492,8 +539,8 @@ body {
 
 .collapse-button:hover {
   background-color: var(--background-color);
-  color: var(--primary-color); /* Changes color on hover */
-  transform: scale(1.1); /* Slight grow effect on hover */
+  color: var(--primary-color);
+  transform: scale(1.1);
 }
 
 .sidebar-nav {
@@ -529,45 +576,9 @@ body {
   text-align: center;
 }
 
-.sidebar.collapsed .link-text {
-  display: none;
-}
-
+.sidebar.collapsed .link-text,
 .sidebar.collapsed .sidebar-title {
   display: none;
-}
-
-/* Main Content */
-.main-content {
-  flex: 1;
-  margin-left: 250px;
-  transition: margin-left 0.3s ease;
-  padding: 2rem;
-  background-color: var(--background-color);
-}
-
-.main-content.expanded {
-  margin-left: 60px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 60px;
-  }
-
-  .sidebar .link-text,
-  .sidebar .sidebar-title {
-    display: none;
-  }
-
-  .main-content {
-    margin-left: 60px;
-  }
-
-  .collapse-button {
-    display: none;
-  }
 }
 
 /* Update container class to work with sidebar */
