@@ -1,46 +1,49 @@
-import React, { useState } from "react";
+// src/App.js
+import React, { useState } from 'react';
 import { BrowserRouter as Router } from "react-router-dom";
-import DroneInterface from "./components/DroneInterface";
+import DroneInterface from './components/DroneInterface';
 import AutoPilot from "./components/AutoPilot";
-import NavigationTab from "./components/NavigationTab";
+import NavigationTab from './components/navigation/NavigationTab';
+import ItemManagement from './components/items/ItemManagement';
+import LocationManagement from './components/locations/LocationManagement';
+import Export from './components/exports/Export';
+import './assets/styles/index.css';
 import "./App.css";
 
-function App() {
-  const [activeTab, setActiveTab] = useState("drone");
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Render the active component based on the selected tab
-  const renderActiveComponent = () => {
-    switch (activeTab) {
-      case "drone":
+function App() {
+  const [currentPage, setCurrentPage] = useState('drone');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'drone':
         return <DroneInterface />;
       case "autopilot":
         return <AutoPilot />;
-      case "items":
-        return <div>Item Management Component</div>;
-      case "locations":
-        return <div>Locations Component</div>;
-      case "exports":
-        return <div>Export Data Component</div>;
+      case 'items':
+        return <ItemManagement />;
+      case 'locations':
+        return <LocationManagement />;
+      case 'exports':
+        return <Export />;
       default:
         return <DroneInterface />;
     }
   };
 
   return (
-    <Router>
-      <div className="app-container">
-        <NavigationTab
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isCollapsed={isCollapsed}
-          setIsCollapsed={setIsCollapsed}
-        />
-        <div className={`main-content ${isCollapsed ? "expanded" : ""}`}>
-          {renderActiveComponent()}
-        </div>
-      </div>
-    </Router>
+    <div className="app">
+      <NavigationTab 
+        activeTab={currentPage} 
+        setActiveTab={setCurrentPage}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
+      <main className={`main-content ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        {renderPage()}
+      </main>
+    </div>
   );
 }
 
