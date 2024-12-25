@@ -267,6 +267,34 @@ body {
   background-color: var(--background-color);
 }
 
+.qr-content {
+  padding: 1rem;
+  background-color: var(--background-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.qr-content > div {
+  margin-bottom: 0.5rem;
+}
+
+.qr-content > div:last-child {
+  margin-bottom: 0;
+}
+
+.qr-content strong {
+  color: var(--text-primary);
+}
+
+.qr-content pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin: 0;
+  padding: 0.5rem;
+  background-color: var(--background-color);
+  border-radius: var(--radius-md);
+}
+
 /* Animations */
 @keyframes slideIn {
   from {
@@ -624,4 +652,47 @@ body {
   gap: 1rem;
   max-width: 400px;
   align-items: center;
+}
+
+/*Scanned Itemv Views*/
+.scanned-items-card {
+  grid-column: 1 / -1; /* Makes the card span full width */
+  margin-top: 1rem;
+}
+
+.scanned-items-content {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.scanned-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.scanned-items-table th,
+.scanned-items-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+.scanned-items-table th {
+  background-color: var(--background-color);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.scanned-items-table tr.item-exists {
+  background-color: #dcfce7;
+}
+
+.scanned-items-table tr.item-not-exists {
+  background-color: #fee2e2;
+}
+
+.scanned-items-table tr:hover {
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
 }

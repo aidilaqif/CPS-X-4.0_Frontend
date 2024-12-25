@@ -11,6 +11,7 @@ const AutoPilot = () => {
   const [qrResult, setQrResult] = useState("");
   const [flightPlanPreview, setFlightPlanPreview] = useState(null);
   const [calibrating, setCalibrating] = useState(false);
+  const [scannedItems, setScannedItems] = useState([]);
 
   const API_BASE = "http://localhost:5000";
 
@@ -22,6 +23,10 @@ const AutoPilot = () => {
         setConnected(data.connected);
         setBattery(data.battery);
         setQrResult(data.qr_result);
+
+        const scannedItemsResponse = await fetch(`${API_BASE}/scanned-items`);
+        const scannedItemsData = await scannedItemsResponse.json();
+        setScannedItems(scannedItemsData.items);
       } catch (err) {
         setError("Failed to fetch drone status");
       }
@@ -180,7 +185,9 @@ const AutoPilot = () => {
             {/* Calibration Section */}
             <div className="calibration-section">
               <button
-                className={`button calibrate ${calibrating ? "calibrating" : ""}`}
+                className={`button calibrate ${
+                  calibrating ? "calibrating" : ""
+                }`}
                 onClick={calibrateDrone}
                 disabled={!connected || isExecuting || calibrating}
               >
@@ -224,7 +231,10 @@ const AutoPilot = () => {
               <div className="flight-plan-preview">
                 <h3>Flight Plan Preview</h3>
                 <div className="preview-content">
-                  <p>Total Commands: {flightPlanPreview.session_summary.total_commands}</p>
+                  <p>
+                    Total Commands:{" "}
+                    {flightPlanPreview.session_summary.total_commands}
+                  </p>
                   <p>
                     Battery Required:{" "}
                     {flightPlanPreview.session_summary.battery_start -
@@ -261,20 +271,53 @@ const AutoPilot = () => {
           </div>
         </div>
 
-        {/* QR Result Card - Full Width */}
+        {/* QR Result Card */}
         <div className="card qr-result-card">
           <div className="card-header">
             <h2 className="card-title">QR Code Detection</h2>
           </div>
           <div className="qr-result">
             {qrResult ? (
-              <>
-                <div>QR Code Detected</div>
-                <div>Content: {qrResult}</div>
-              </>
+              <div className="qr-content">
+                <pre>{qrResult}</pre>
+              </div>
             ) : (
               "No QR code detected"
             )}
+          </div>
+        </div>
+
+        {/* Scanned Items History Card */}
+        <div className="card scanned-items-card">
+          <div className="card-header">
+            <h2 className="card-title">Scanned Items History</h2>
+          </div>
+          <div className="scanned-items-content">
+            <table className="scanned-items-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Label ID</th>
+                  <th>Work Order</th>
+                  <th>Status</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scannedItems.map((item, index) => (
+                  <tr
+                    key={index}
+                    className={item.exists ? "item-exists" : "item-not-exists"}
+                  >
+                    <td>{item.timestamp}</td>
+                    <td>{item.label_id}</td>
+                    <td>{item.work_order}</td>
+                    <td>{item.exists ? "Found" : "Not Found"}</td>
+                    <td>{item.type}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -289,15 +332,17 @@ const AutoPilot = () => {
       </button>
 
       {error && (
-        <div className={`alert ${
-          error.includes("success") 
-            ? "success" 
-            : error.includes("Calibrating")
-            ? "info"
-            : error.includes("EMERGENCY")
-            ? "emergency"
-            : "error"
-        }`}>
+        <div
+          className={`alert ${
+            error.includes("success")
+              ? "success"
+              : error.includes("Calibrating")
+              ? "info"
+              : error.includes("EMERGENCY")
+              ? "emergency"
+              : "error"
+          }`}
+        >
           {error}
         </div>
       )}
