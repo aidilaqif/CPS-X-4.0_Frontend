@@ -9,6 +9,8 @@ import {
   Select,
   Alert,
 } from "antd";
+import { itemService } from "../../../services/item.service";
+import { locationService } from "../../../services/location.service";
 
 const CreateItemDialog = ({ isOpen, onClose, item, onCreateItem }) => {
   const [form] = Form.useForm();
@@ -20,10 +22,8 @@ const CreateItemDialog = ({ isOpen, onClose, item, onCreateItem }) => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/locations");
-        const data = await response.json();
-
-        const filteredLocations = data.data.filter((location) =>
+        const response = await locationService.getAllLocations();
+        const filteredLocations = response.data.filter((location) =>
           item.type === "Roll"
             ? location.type_name === "Paper Roll Location"
             : location.type_name === "FG Location"
@@ -43,10 +43,7 @@ const CreateItemDialog = ({ isOpen, onClose, item, onCreateItem }) => {
 
   const checkItemExists = async (labelId) => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/items/${labelId}/exists`
-      );
-      const data = await response.json();
+      const data = await itemService.checkItemExists(labelId);
       return data.exists;
     } catch (err) {
       console.error("Error checking item existence:", err);
@@ -59,16 +56,12 @@ const CreateItemDialog = ({ isOpen, onClose, item, onCreateItem }) => {
       const values = await form.validateFields();
       setLoading(true);
 
-      // Check if item already exists
+      // Check if item exists
       const exists = await checkItemExists(item.label_id);
       if (exists) {
         setError(
           `Item with ID ${item.label_id} already exists in the database`
         );
-        message.error(
-          `Item with ID ${item.label_id} already exists in the database`
-        );
-        setLoading(false);
         return;
       }
 
@@ -91,25 +84,12 @@ const CreateItemDialog = ({ isOpen, onClose, item, onCreateItem }) => {
               },
       };
 
-      const response = await fetch("http://localhost:8080/api/items", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create item");
-      }
-
-      const data = await response.json();
+      const data = await itemService.createItem(payload);
       message.success("Item created successfully");
       onCreateItem(data);
       onClose();
     } catch (err) {
       setError(err.message || "Error creating item");
-      message.error(err.message || "Error creating item");
     } finally {
       setLoading(false);
     }
