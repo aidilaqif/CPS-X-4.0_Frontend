@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "../styles.css";
+import "../../../styles.css";
+import ScannedItemsTable from "../shared_components/ScannedItemTable";
+import { Card } from "antd";
 
 const DroneInterface = () => {
   const [connected, setConnected] = useState(false);
@@ -69,14 +71,33 @@ const DroneInterface = () => {
         // Fetch scanned items
         const scannedItemsResponse = await fetch(`${API_BASE}/scanned-items`);
         const scannedItemsData = await scannedItemsResponse.json();
-        setScannedItems(scannedItemsData.items);
+        setScannedItems(
+          scannedItemsData.items.map((item) => ({
+            ...item,
+            key: item.label_id + item.timestamp, // Add key for Ant Design Table
+          }))
+        );
       } catch (err) {
-        setError("Failed to fetch drone status");
+        // message.error("Failed to fetch drone status");
       }
     };
 
     const intervalId = setInterval(fetchData, 1000);
-    return () => clearInterval(intervalId);
+
+    // Add global update function
+    window.updateScannedItems = (updatedItems) => {
+      setScannedItems(
+        updatedItems.map((item) => ({
+          ...item,
+          key: item.label_id + item.timestamp,
+        }))
+      );
+    };
+
+    return () => {
+      clearInterval(intervalId);
+      delete window.updateScannedItems;
+    };
   }, [API_BASE]);
 
   const handleConnect = async () => {
@@ -355,10 +376,7 @@ const DroneInterface = () => {
         </div>
 
         {/* QR Result Card */}
-        <div className="card qr-result-card">
-          <div className="card-header">
-            <h2 className="card-title">QR Code Detection</h2>
-          </div>
+        <Card title="QR Code Detection" className="qr-result-card">
           <div className="qr-result">
             {qrResult ? (
               <div className="qr-content">
@@ -368,40 +386,15 @@ const DroneInterface = () => {
               "No QR code detected"
             )}
           </div>
-        </div>
+        </Card>
         {/* Scanned Items History Card */}
-        <div className="card scanned-items-card">
-          <div className="card-header">
-            <h2 className="card-title">Scanned Items History</h2>
-          </div>
-          <div className="scanned-items-content">
-            <table className="scanned-items-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Label ID</th>
-                  <th>Work Order</th>
-                  <th>Status</th>
-                  <th>Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scannedItems.map((item, index) => (
-                  <tr
-                    key={index}
-                    className={item.exists ? "item-exists" : "item-not-exists"}
-                  >
-                    <td>{item.timestamp}</td>
-                    <td>{item.label_id}</td>
-                    <td>{item.work_order}</td>
-                    <td>{item.exists ? "Found" : "Not Found"}</td>
-                    <td>{item.type}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card
+          title="Scanned Items History"
+          className="scanned-items-card"
+          style={{ marginTop: "1rem" }}
+        >
+          <ScannedItemsTable items={scannedItems} />
+        </Card>
       </div>
 
       {/* Force Emergency Stop */}
