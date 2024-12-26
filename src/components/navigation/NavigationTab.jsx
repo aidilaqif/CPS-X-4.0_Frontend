@@ -9,7 +9,7 @@ import {
   PlaneTakeoff,
 } from "lucide-react";
 import "../../assets/styles/components/NavigationTab.css";
-import AutoPilot from "../drone/autopilot/AutoPilot";
+// import AutoPilot from "../drone/autopilot/AutoPilot";
 
 const NavigationTab = ({
   activeTab,
