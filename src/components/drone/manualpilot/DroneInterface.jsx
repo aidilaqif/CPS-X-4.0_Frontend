@@ -13,12 +13,12 @@ const DroneInterface = () => {
 
   // Distance states for each direction
   const [distances, setDistances] = useState({
-    up: "20",
-    down: "20",
-    left: "20",
-    right: "20",
-    forward: "20",
-    back: "20",
+    up: "40",
+    down: "40",
+    left: "40",
+    right: "40",
+    forward: "40",
+    back: "40",
   });
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -44,7 +44,7 @@ const DroneInterface = () => {
   const handleDistanceBlur = (direction) => {
     const value = distances[direction];
     if (value === "") {
-      setDistances((prev) => ({ ...prev, [direction]: "20" })); // Default value
+      setDistances((prev) => ({ ...prev, [direction]: "40" })); // Default value
       return;
     }
 
@@ -53,7 +53,7 @@ const DroneInterface = () => {
       setError(
         `Invalid distance for ${direction}. Must be a multiple of 5 and not exceed 100`
       );
-      setDistances((prev) => ({ ...prev, [direction]: "20" })); // Reset to default
+      setDistances((prev) => ({ ...prev, [direction]: "40" })); // Reset to default
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -352,11 +352,11 @@ const DroneInterface = () => {
             </button>
 
             <button
-              className="button emergency"
-              onClick={() => sendCommand("emergency")}
+              className="button danger force-emergency"
+              onClick={forceEmergencyStop}
               disabled={!connected}
             >
-              Emergency Stop
+              Force Emergency Stop
             </button>
           </div>
         </div>
@@ -398,13 +398,13 @@ const DroneInterface = () => {
       </div>
 
       {/* Force Emergency Stop */}
-      <button
+      {/* <button
         className="button danger force-emergency"
         onClick={forceEmergencyStop}
         disabled={!connected}
       >
         FORCE EMERGENCY STOP
-      </button>
+      </button> */}
 
       {/* Error/Status Messages */}
       {error && (
