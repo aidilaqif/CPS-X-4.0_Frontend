@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "../../../styles.css";
 import ScannedItemsTable from "../shared_components/ScannedItemTable";
-import { Card, message } from "antd";
+import FlightLogs from "./FlightLogs";
+import { Card, Tabs, Select, Button, Tooltip, message } from "antd";
+import { Star, StarOff } from "lucide-react";
+import moment from "moment-timezone";
+
+const { TabPane } = Tabs;
+const { Option } = Select;
 
 const AutoPilot = () => {
   const [connected, setConnected] = useState(false);
@@ -14,10 +20,14 @@ const AutoPilot = () => {
   const [flightPlanPreview, setFlightPlanPreview] = useState(null);
   const [calibrating, setCalibrating] = useState(false);
   const [scannedItems, setScannedItems] = useState([]);
+  const [flightSessions, setFlightSessions] = useState([]);
+  const [selectedSession, setSelectedSession] = useState(null);
 
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = process.env.REACT_APP_API_URL;
+  const CPS_API_BASE = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
+    fetchFlightSessions();
     const fetchData = async () => {
       try {
         // Fetch drone status
@@ -58,6 +68,108 @@ const AutoPilot = () => {
       delete window.updateScannedItems;
     };
   }, [API_BASE]);
+
+  const fetchFlightSessions = async () => {
+    try {
+      const response = await fetch(`${CPS_API_BASE}/api/movement-logs`);
+      const data = await response.json();
+      setFlightSessions(data.data);
+    } catch (error) {
+      message.error("Failed to fetch flight sessions");
+    }
+  };
+
+  const handleStarSession = async (sessionId, currentStarred, e) => {
+    e.stopPropagation(); // Prevent select dropdown from opening
+    try {
+      const response = await fetch(
+        `${CPS_API_BASE}/api/movement-logs/${sessionId}/star`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_starred: !currentStarred }),
+        }
+      );
+
+      if (response.ok) {
+        setFlightSessions((sessions) =>
+          sessions.map((session) =>
+            session.session_id === sessionId
+              ? { ...session, is_starred: !session.is_starred }
+              : session
+          )
+        );
+        message.success("Session updated successfully");
+      }
+    } catch (error) {
+      message.error("Failed to update session");
+    }
+  };
+
+  const handleSessionSelect = async (sessionId) => {
+    if (!sessionId) {
+      setSelectedSession(null);
+      setFlightPlanLoaded(false);
+      setFlightPlanPreview(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${CPS_API_BASE}/api/movement-logs/${sessionId}`
+      );
+      const sessionData = await response.json();
+
+      // Transform session data into flight plan format
+      const flightPlan = {
+        flight_data: sessionData.movements.map((m) => ({
+          action: m.action.replace("auto_", ""),
+          distance: m.distance,
+          timestamp: m.timestamp,
+        })),
+        session_summary: {
+          total_commands: sessionData.total_commands,
+          battery_start: sessionData.battery_start,
+          battery_end: sessionData.battery_end,
+          command_breakdown: sessionData.movements.reduce((acc, m) => {
+            const action = m.action.replace("auto_", "");
+            acc[action] = (acc[action] || 0) + 1;
+            return acc;
+          }, {}),
+        },
+      };
+
+      setSelectedSession(sessionId);
+      setFlightPlanPreview(flightPlan);
+      setFlightPlanLoaded(true);
+
+      // Upload the flight plan to the drone
+      const formData = new FormData();
+      const blob = new Blob([JSON.stringify(flightPlan)], {
+        type: "application/json",
+      });
+      formData.append("file", blob, "flight_plan.json");
+
+      const uploadResponse = await fetch(
+        `${API_BASE}/autopilot/upload_flight_plan`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const uploadData = await uploadResponse.json();
+      if (uploadData.status !== "success") {
+        throw new Error(uploadData.message);
+      }
+
+      message.success("Flight plan loaded successfully");
+    } catch (error) {
+      message.error("Failed to load flight session");
+      setFlightPlanLoaded(false);
+      setFlightPlanPreview(null);
+    }
+  };
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -186,161 +298,249 @@ const AutoPilot = () => {
 
   return (
     <div className="container">
-      <div className="dashboard-grid">
-        {/* AutoPilot Control Card */}
-        <div className="card control-card">
-          <div className="card-header">
-            <div className="card-title">
-              Tello Drone AutoPilot
-              <div className="status-bar">
-                <span className={connected ? "connected" : "disconnected"}>
-                  {connected ? "● Connected" : "○ Disconnected"}
-                </span>
-                <span>Battery: {battery}%</span>
-                {isExecuting && (
-                  <span className="executing">● AutoPilot Active</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="autopilot-controls">
-            {/* Calibration Section */}
-            <div className="calibration-section">
-              <button
-                className={`button calibrate ${
-                  calibrating ? "calibrating" : ""
-                }`}
-                onClick={calibrateDrone}
-                disabled={!connected || isExecuting || calibrating}
-              >
-                {calibrating ? "Calibrating..." : "Calibrate IMU"}
-              </button>
-              <div className="calibration-note">
-                Note: Calibrate before starting AutoPilot for better stability
-              </div>
-            </div>
-
-            {/* File Upload Section */}
-            <div className="file-upload">
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileSelect}
-                disabled={!connected || isExecuting}
-              />
-              <button
-                className="button"
-                onClick={uploadFlightPlan}
-                disabled={!selectedFile || !connected || isExecuting}
-              >
-                Upload Flight Plan
-              </button>
-            </div>
-
-            {/* Execution Controls */}
-            <div className="execution-controls">
-              <button
-                className={`button ${isExecuting ? "danger" : "primary"}`}
-                onClick={isExecuting ? stopAutopilot : startAutopilot}
-                disabled={!connected || !flightPlanLoaded}
-              >
-                {isExecuting ? "Stop AutoPilot" : "Start AutoPilot"}
-              </button>
-            </div>
-
-            {/* Flight Plan Preview */}
-            {flightPlanPreview && (
-              <div className="flight-plan-preview">
-                <h3>Flight Plan Preview</h3>
-                <div className="preview-content">
-                  <p>
-                    Total Commands:{" "}
-                    {flightPlanPreview.session_summary.total_commands}
-                  </p>
-                  <p>
-                    Battery Required:{" "}
-                    {flightPlanPreview.session_summary.battery_start -
-                      flightPlanPreview.session_summary.battery_end}
-                    %
-                  </p>
-                  <p>Commands:</p>
-                  <div className="command-list">
-                    {Object.entries(
-                      flightPlanPreview.session_summary.command_breakdown
-                    ).map(([command, count]) => (
-                      <div key={command} className="command-item">
-                        {command}: {count}x
-                      </div>
-                    ))}
+      <Tabs defaultActiveKey="control" className="mb-4">
+        <TabPane tab="Drone Control" key="control">
+          <div className="dashboard-grid">
+            {/* AutoPilot Control Card */}
+            <div className="card control-card">
+              <div className="card-header">
+                <div className="card-title">
+                  Tello Drone AutoPilot
+                  <div className="status-bar">
+                    <span className={connected ? "connected" : "disconnected"}>
+                      {connected ? "● Connected" : "○ Disconnected"}
+                    </span>
+                    <span>Battery: {battery}%</span>
+                    {isExecuting && (
+                      <span className="executing">● AutoPilot Active</span>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Camera Feed Card */}
-        <div className="card camera-card">
-          <div className="card-header">
-            <h2 className="card-title">Drone Camera Feed</h2>
-          </div>
-          <div className="video-feed">
-            {connected ? (
-              <img src={`${API_BASE}/video_feed`} alt="Drone camera feed" />
-            ) : (
-              <div className="placeholder">Camera feed unavailable</div>
-            )}
-          </div>
-        </div>
+              <div className="autopilot-controls">
+                {/* Calibration Section */}
+                <div className="calibration-section">
+                  <button
+                    className={`button calibrate ${
+                      calibrating ? "calibrating" : ""
+                    }`}
+                    onClick={calibrateDrone}
+                    disabled={!connected || isExecuting || calibrating}
+                  >
+                    {calibrating ? "Calibrating..." : "Calibrate IMU"}
+                  </button>
+                  <div className="calibration-note">
+                    Note: Calibrate before starting AutoPilot for better
+                    stability
+                  </div>
+                </div>
 
-        {/* QR Result Card */}
-        <Card title="QR Code Detection" className="qr-result-card">
-          <div className="qr-result">
-            {qrResult ? (
-              <div className="qr-content">
-                <pre>{qrResult}</pre>
+                {/* Flight Session Selection */}
+                <div className="session-selection">
+                  <h3 className="text-lg font-semibold mb-2">
+                    Load Flight Session
+                  </h3>
+                  <Select
+                    style={{ width: "100%" }}
+                    placeholder="Select a flight session"
+                    onChange={handleSessionSelect}
+                    value={selectedSession}
+                    disabled={!connected || isExecuting}
+                    optionLabelProp="label"
+                  >
+                    <Option value="" label="Upload New Flight Plan">
+                      <div className="flex items-center justify-between">
+                        Upload New Flight Plan
+                      </div>
+                    </Option>
+                    {flightSessions
+                      .sort(
+                        (a, b) =>
+                          b.is_starred - a.is_starred ||
+                          moment(b.start_time).diff(moment(a.start_time))
+                      )
+                      .map((session) => (
+                        <Option
+                          key={session.session_id}
+                          value={session.session_id}
+                          label={
+                            session.name ||
+                            `Flight Session ${session.session_id}`
+                          }
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              {session.name ||
+                                `Flight Session ${session.session_id}`}
+                              <span className="text-gray-400 ml-2 text-sm">
+                                (
+                                {moment(session.start_time).format(
+                                  "MMM D, HH:mm"
+                                )}
+                                )
+                              </span>
+                            </div>
+                            <Tooltip
+                              title={
+                                session.is_starred
+                                  ? "Remove from starred"
+                                  : "Add to starred"
+                              }
+                            >
+                              <Button
+                                type="text"
+                                icon={
+                                  session.is_starred ? (
+                                    <Star size={16} fill="#fadb14" />
+                                  ) : (
+                                    <StarOff size={16} />
+                                  )
+                                }
+                                onClick={(e) =>
+                                  handleStarSession(
+                                    session.session_id,
+                                    session.is_starred,
+                                    e
+                                  )
+                                }
+                              />
+                            </Tooltip>
+                          </div>
+                        </Option>
+                      ))}
+                  </Select>
+                </div>
+
+                {/* File Upload Section (show only when no session is selected) */}
+                {!selectedSession && (
+                  <div className="file-upload">
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileSelect}
+                      disabled={!connected || isExecuting}
+                    />
+                    <button
+                      className="button"
+                      onClick={uploadFlightPlan}
+                      disabled={!selectedFile || !connected || isExecuting}
+                    >
+                      Upload Flight Plan
+                    </button>
+                  </div>
+                )}
+
+                {/* Execution Controls */}
+                <div className="execution-controls">
+                  <button
+                    className={`button ${isExecuting ? "danger" : "primary"}`}
+                    onClick={isExecuting ? stopAutopilot : startAutopilot}
+                    disabled={!connected || !flightPlanLoaded}
+                  >
+                    {isExecuting ? "Stop AutoPilot" : "Start AutoPilot"}
+                  </button>
+                </div>
+
+                {/* Emergency Stop Button */}
+                <button
+                  className="button danger force-emergency"
+                  onClick={emergencyStop}
+                  disabled={!connected}
+                >
+                  Force Emergency Stop
+                </button>
+
+                {/* Flight Plan Preview */}
+                {flightPlanPreview && (
+                  <div className="flight-plan-preview">
+                    <h3>Flight Plan Preview</h3>
+                    <div className="preview-content">
+                      <p>
+                        Total Commands:{" "}
+                        {flightPlanPreview.session_summary.total_commands}
+                      </p>
+                      <p>
+                        Battery Required:{" "}
+                        {flightPlanPreview.session_summary.battery_start -
+                          flightPlanPreview.session_summary.battery_end}
+                        %
+                      </p>
+                      <p>Commands:</p>
+                      <div className="command-list">
+                        {Object.entries(
+                          flightPlanPreview.session_summary.command_breakdown
+                        ).map(([command, count]) => (
+                          <div key={command} className="command-item">
+                            {command}: {count}x
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : (
-              "No QR code detected"
-            )}
+            </div>
+
+            {/* Camera Feed Card */}
+            <div className="card camera-card">
+              <div className="card-header">
+                <h2 className="card-title">Drone Camera Feed</h2>
+              </div>
+              <div className="video-feed">
+                {connected ? (
+                  <img src={`${API_BASE}/video_feed`} alt="Drone camera feed" />
+                ) : (
+                  <div className="placeholder">Camera feed unavailable</div>
+                )}
+              </div>
+            </div>
+
+            {/* QR Result Card */}
+            <Card title="QR Code Detection" className="qr-result-card">
+              <div className="qr-result">
+                {qrResult ? (
+                  <div className="qr-content">
+                    <pre>{qrResult}</pre>
+                  </div>
+                ) : (
+                  "No QR code detected"
+                )}
+              </div>
+            </Card>
+
+            {/* Scanned Items History Card */}
+            <Card
+              title="Scanned Items History"
+              className="scanned-items-card"
+              style={{ marginTop: "1rem" }}
+            >
+              <ScannedItemsTable items={scannedItems} />
+            </Card>
           </div>
-        </Card>
 
-        {/* Scanned Items History Card */}
-        <Card
-          title="Scanned Items History"
-          className="scanned-items-card"
-          style={{ marginTop: "1rem" }}
-        >
-          <ScannedItemsTable items={scannedItems} />
-        </Card>
-      </div>
+          {/* Error/Status Messages */}
+          {error && (
+            <div
+              className={`alert ${
+                error.includes("success")
+                  ? "success"
+                  : error.includes("Calibrating")
+                  ? "info"
+                  : error.includes("EMERGENCY")
+                  ? "emergency"
+                  : "error"
+              }`}
+            >
+              {error}
+            </div>
+          )}
+        </TabPane>
 
-      {/* Emergency Stop Button - Full Width */}
-      <button
-        className="button danger force-emergency"
-        onClick={emergencyStop}
-        disabled={!connected}
-      >
-        FORCE EMERGENCY STOP
-      </button>
-
-      {error && (
-        <div
-          className={`alert ${
-            error.includes("success")
-              ? "success"
-              : error.includes("Calibrating")
-              ? "info"
-              : error.includes("EMERGENCY")
-              ? "emergency"
-              : "error"
-          }`}
-        >
-          {error}
-        </div>
-      )}
+        <TabPane tab="Flight Logs" key="logs">
+          <FlightLogs />
+        </TabPane>
+      </Tabs>
     </div>
   );
 };
