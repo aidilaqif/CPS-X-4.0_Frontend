@@ -19,8 +19,8 @@ const DroneInterface = () => {
     right: "40",
     forward: "40",
     back: "40",
-    yaw_left: "90",
-    yaw_right: "90",
+    rotate_left: "90",
+    rotate_right: "90",
   });
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -338,12 +338,12 @@ const DroneInterface = () => {
               <div className="direction-control">
                 <button
                   className="button"
-                  onClick={() => sendCommand("yaw_left")}
+                  onClick={() => sendCommand("rotate_left")}
                   disabled={!connected}
                 >
                   Rotate Left
                 </button>
-                {renderDistanceInput("yaw_left")}
+                {renderDistanceInput("rotate_left")}
               </div>
               <div className="direction-control">
                 <button
@@ -357,12 +357,12 @@ const DroneInterface = () => {
               <div className="direction-control">
                 <button
                   className="button"
-                  onClick={() => sendCommand("yaw_right")}
+                  onClick={() => sendCommand("rotate_right")}
                   disabled={!connected}
                 >
                   Rotate Right
                 </button>
-                {renderDistanceInput("yaw_right")}
+                {renderDistanceInput("rotate_right")}
               </div>
               <div></div>
             </div>
