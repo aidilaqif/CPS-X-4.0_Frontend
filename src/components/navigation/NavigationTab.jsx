@@ -7,6 +7,7 @@ import {
   MapPin,
   FileDown,
   PlaneTakeoff,
+  LayoutDashboard,
 } from "lucide-react";
 import "../../assets/styles/components/NavigationTab.css";
 // import AutoPilot from "../drone/autopilot/AutoPilot";
@@ -18,6 +19,7 @@ const NavigationTab = ({
   setIsCollapsed,
 }) => {
   const navigationItems = [
+    { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20}/>},
     { id: "drone", label: "Manual Pilot"  , icon: <LucidePlane size={20} /> },
     { id: "autopilot", label: "Auto Pilot", icon: <PlaneTakeoff size={20} /> },
     { id: "items", label: "Item Management", icon: <Package size={20} /> },
