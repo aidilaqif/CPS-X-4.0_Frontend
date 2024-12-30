@@ -19,13 +19,18 @@ const DroneInterface = () => {
     right: "20",
     forward: "20",
     back: "20",
+    yaw_left: "90",
+    yaw_right: "90",
   });
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   // Validation function for distances
-  const validateDistance = (value) => {
+  const validateDistance = (value, isRotation = false) => {
     const num = parseInt(value);
+    if (isRotation) {
+      return !isNaN(num) && num > 0 && num <= 360 && num % 90 === 0;
+    }
     return !isNaN(num) && num > 0 && num <= 100 && num % 5 === 0;
   };
 
@@ -43,17 +48,22 @@ const DroneInterface = () => {
   // Handle distance input blur (for validation)
   const handleDistanceBlur = (direction) => {
     const value = distances[direction];
+    const isRotation = direction.startsWith("yaw_");
+    const defaultValue = isRotation ? "90" : "20";
+
     if (value === "") {
-      setDistances((prev) => ({ ...prev, [direction]: "20" })); // Default value
+      setDistances((prev) => ({ ...prev, [direction]: defaultValue }));
       return;
     }
 
     const num = parseInt(value);
-    if (!validateDistance(num)) {
+    if (!validateDistance(num, isRotation)) {
       setError(
-        `Invalid distance for ${direction}. Must be a multiple of 5 and not exceed 100`
+        isRotation
+          ? `Invalid rotation for ${direction}. Must be a multiple of 90 and not exceed 360`
+          : `Invalid distance for ${direction}. Must be a multiple of 5 and not exceed 100`
       );
-      setDistances((prev) => ({ ...prev, [direction]: "20" })); // Reset to default
+      setDistances((prev) => ({ ...prev, [direction]: defaultValue }));
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -262,7 +272,6 @@ const DroneInterface = () => {
                 </button>
               </div>
               <div></div>
-
               <div className="direction-control">
                 <button
                   className="button"
@@ -293,7 +302,6 @@ const DroneInterface = () => {
                 </button>
                 {renderDistanceInput("right")}
               </div>
-
               <div></div>
               <div className="direction-control">
                 <button
@@ -306,7 +314,6 @@ const DroneInterface = () => {
                 {renderDistanceInput("down")}
               </div>
               <div></div>
-
               <div className="direction-control">
                 <button
                   className="button"
@@ -317,6 +324,7 @@ const DroneInterface = () => {
                 </button>
                 {renderDistanceInput("forward")}
               </div>
+              <div></div>
               <div className="direction-control">
                 <button
                   className="button"
@@ -327,9 +335,16 @@ const DroneInterface = () => {
                 </button>
                 {renderDistanceInput("back")}
               </div>
-              <div></div>
-
-              <div></div>
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("yaw_left")}
+                  disabled={!connected}
+                >
+                  Rotate Left
+                </button>
+                {renderDistanceInput("yaw_left")}
+              </div>
               <div className="direction-control">
                 <button
                   className="button"
@@ -338,6 +353,16 @@ const DroneInterface = () => {
                 >
                   Land
                 </button>
+              </div>{" "}
+              <div className="direction-control">
+                <button
+                  className="button"
+                  onClick={() => sendCommand("yaw_right")}
+                  disabled={!connected}
+                >
+                  Rotate Right
+                </button>
+                {renderDistanceInput("yaw_right")}
               </div>
               <div></div>
             </div>

@@ -627,6 +627,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  margin-inline: 10px;
+  margin-top: 15px;
 }
 
 .distance-input {
@@ -695,4 +697,48 @@ body {
 .scanned-items-table tr:hover {
   opacity: 0.9;
   transition: opacity 0.2s ease;
+}
+
+/*Flight Session Selection (AutoPilot)*/
+.session-selection {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: var(--background-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.session-selection h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Style the ant-select component */
+.ant-select-selection-item {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Style the session options */
+.ant-select-item-option-content {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Star button styles */
+.star-button {
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.star-button:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Starred session highlight */
+.ant-select-item-option-selected .session-starred {
+  color: #fadb14;
 }
