@@ -8,6 +8,7 @@ import LocationManagement from "./components/locations/LocationManagement";
 import Export from "./components/exports/Export";
 import "./assets/styles/index.css";
 import "antd/dist/reset.css";
+import Dashboard from "./components/dashboard/Dashboard";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("drone");
@@ -25,8 +26,10 @@ function App() {
         return <LocationManagement />;
       case "exports":
         return <Export />;
+      case "renderPage":
+        return <Dashboard/>;
       default:
-        return <DroneInterface />;
+        return <Dashboard />;
     }
   };
 

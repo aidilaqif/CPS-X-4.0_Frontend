@@ -28,7 +28,7 @@ const ItemManagement = () => {
   const [locations, setLocations] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState(new Set());
-  const [itemDetails, setItemDetails] = useState({})
+  const [itemDetails, setItemDetails] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
     itemId: null,
@@ -84,12 +84,14 @@ const ItemManagement = () => {
 
   const fetchItemDetails = async (itemId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/items/${itemId}/exists`);
+      const response = await fetch(
+        `${API_BASE_URL}/api/items/${itemId}/exists`
+      );
       if (!response.ok) throw new Error("Failed to fetch item details");
       const data = await response.json();
-      setItemDetails(prev => ({
+      setItemDetails((prev) => ({
         ...prev,
-        [itemId]: data.item
+        [itemId]: data.item,
       }));
     } catch (err) {
       console.error("Error fetching item details:", err);
@@ -434,15 +436,38 @@ const ItemManagement = () => {
                         <div className="item-management-details">
                           {item.label_type === "Roll" ? (
                             <>
-                              <p>Name: {itemDetails[item.label_id].details?.name}</p>
-                              <p>Size (mm): {itemDetails[item.label_id].details?.size_mm}</p>
+                              <p>
+                                Name: {itemDetails[item.label_id].details?.name}
+                              </p>
+                              <p>
+                                Size (mm):{" "}
+                                {itemDetails[item.label_id].details?.size_mm}
+                              </p>
                             </>
                           ) : (
                             <>
-                              <p>Pallet Number: {itemDetails[item.label_id].details?.plt_number}</p>
-                              <p>Quantity: {itemDetails[item.label_id].details?.quantity}</p>
-                              <p>Work Order ID: {itemDetails[item.label_id].details?.work_order_id}</p>
-                              <p>Total Pieces: {itemDetails[item.label_id].details?.total_pieces}</p>
+                              <p>
+                                Pallet Number:{" "}
+                                {itemDetails[item.label_id].details?.plt_number}
+                              </p>
+                              <p>
+                                Quantity:{" "}
+                                {itemDetails[item.label_id].details?.quantity}
+                              </p>
+                              <p>
+                                Work Order ID:{" "}
+                                {
+                                  itemDetails[item.label_id].details
+                                    ?.work_order_id
+                                }
+                              </p>
+                              <p>
+                                Total Pieces:{" "}
+                                {
+                                  itemDetails[item.label_id].details
+                                    ?.total_pieces
+                                }
+                              </p>
                             </>
                           )}
                         </div>
@@ -479,8 +504,8 @@ const ItemManagement = () => {
             <div className="item-management-modal-content">
               <p>
                 Are you sure you want to delete item{" "}
-                <span className="font-semibold">{deleteConfirm.itemLabel}</span>?
-                This action cannot be undone.
+                <span className="font-semibold">{deleteConfirm.itemLabel}</span>
+                ? This action cannot be undone.
               </p>
               <div className="item-management-modal-footer">
                 <button
@@ -518,16 +543,18 @@ const ItemManagement = () => {
                   setIsModalOpen(false);
                   resetForm();
                 }}
+                className="item-management-button item-management-button-secondary"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="item-management-form">
               <div className="item-management-form-grid">
-                {/* Form fields remain the same, just update classes */}
+                {/* Label ID */}
                 <div className="item-management-form-group">
-                  <label>Label ID</label>
+                  <label htmlFor="label_id">Label ID</label>
                   <input
+                    id="label_id"
                     type="text"
                     name="label_id"
                     value={formData.label_id}
@@ -536,8 +563,123 @@ const ItemManagement = () => {
                     className="item-management-input"
                   />
                 </div>
-                {/* ... other form fields ... */}
+
+                {/* Label Type */}
+                <div className="item-management-form-group">
+                  <label htmlFor="label_type">Label Type</label>
+                  <select
+                    id="label_type"
+                    name="label_type"
+                    value={formData.label_type}
+                    onChange={handleInputChange}
+                    required
+                    className="item-management-input"
+                  >
+                    <option value="Roll">Roll</option>
+                    <option value="FG Pallet">FG Pallet</option>
+                  </select>
+                </div>
+
+                {/* Location */}
+                <div className="item-management-form-group">
+                  <label htmlFor="location_id">Location</label>
+                  <select
+                    id="location_id"
+                    name="location_id"
+                    value={formData.location_id}
+                    onChange={handleInputChange}
+                    required
+                    className="item-management-input"
+                  >
+                    <option value="">Select Location</option>
+                    {locations
+                      .filter((loc) =>
+                        formData.label_type === "Roll"
+                          ? loc.type_name === "Paper Roll Location"
+                          : loc.type_name === "FG Location"
+                      )
+                      .map((loc) => (
+                        <option key={loc.location_id} value={loc.location_id}>
+                          {loc.location_id} - {loc.type_name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Conditional Fields */}
+                {formData.label_type === "Roll" ? (
+                  <>
+                    <div className="item-management-form-group">
+                      <label htmlFor="name">Name</label>
+                      <input
+                        id="name"
+                        type="text"
+                        name="details.name"
+                        value={formData.details.name}
+                        onChange={handleInputChange}
+                        required
+                        className="item-management-input"
+                      />
+                    </div>
+                    <div className="item-management-form-group">
+                      <label htmlFor="size_mm">Size (mm)</label>
+                      <input
+                        id="size_mm"
+                        type="number"
+                        name="details.size_mm"
+                        value={formData.details.size_mm}
+                        onChange={handleInputChange}
+                        required
+                        min="1"
+                        className="item-management-input"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="item-management-form-group">
+                      <label htmlFor="plt_number">Pallet Number</label>
+                      <input
+                        id="plt_number"
+                        type="number"
+                        name="details.plt_number"
+                        value={formData.details.plt_number}
+                        onChange={handleInputChange}
+                        required
+                        min="1"
+                        className="item-management-input"
+                      />
+                    </div>
+                    <div className="item-management-form-group">
+                      <label htmlFor="quantity">Quantity</label>
+                      <input
+                        id="quantity"
+                        type="number"
+                        name="details.quantity"
+                        value={formData.details.quantity}
+                        onChange={handleInputChange}
+                        required
+                        min="1"
+                        className="item-management-input"
+                      />
+                    </div>
+                    <div className="item-management-form-group">
+                      <label htmlFor="total_pieces">Total Pieces</label>
+                      <input
+                        id="total_pieces"
+                        type="number"
+                        name="details.total_pieces"
+                        value={formData.details.total_pieces}
+                        onChange={handleInputChange}
+                        required
+                        min="1"
+                        className="item-management-input"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
+
               <div className="item-management-modal-footer">
                 <button
                   type="button"

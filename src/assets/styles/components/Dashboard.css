@@ -1,0 +1,28 @@
+.dashboard {
+    display: grid;
+    gap: 1.5rem;
+    padding: 2rem;
+    background-color: var(--background-color);
+  }
+  
+  .dashboard-card {
+    padding: 1.5rem;
+    background-color: var(--card-background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .dashboard-card p {
+    color: var(--text-secondary);
+  }
+  
+  .dashboard-card ul {
+    padding: 0;
+    list-style: none;
+    color: var(--text-primary);
+  }
+  
+  .dashboard-card ul li {
+    margin: 0.5rem 0;
+  }
+  
