@@ -5,6 +5,7 @@ import { Card } from "antd";
 
 const DroneInterface = () => {
   const [connected, setConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [battery, setBattery] = useState(0);
   const [qrResult, setQrResult] = useState("");
   const [error, setError] = useState("");
@@ -78,6 +79,13 @@ const DroneInterface = () => {
         setBattery(statusData.battery);
         setQrResult(statusData.qr_result);
 
+        // If we're in connecting state but got a successful connection, clear it
+        if (connecting && statusData.connected) {
+          setConnecting(false);
+          setError("Connection successful!");
+          setTimeout(() => setError(""), 3000);
+        }
+
         // Fetch scanned items
         const scannedItemsResponse = await fetch(`${API_BASE}/scanned-items`);
         const scannedItemsData = await scannedItemsResponse.json();
@@ -89,6 +97,9 @@ const DroneInterface = () => {
         );
       } catch (err) {
         // message.error("Failed to fetch drone status");
+        setError(
+          "Attempting to connect... Please ensure Tello WiFi is connected."
+        );
       }
     };
 
@@ -108,18 +119,27 @@ const DroneInterface = () => {
       clearInterval(intervalId);
       delete window.updateScannedItems;
     };
-  }, [API_BASE]);
+  }, [API_BASE, connecting]);
 
   const handleConnect = async () => {
+    setConnecting(true);
+    setError("Attempting to connect... Please ensure Tello WiFi is connected.");
+
     try {
       const response = await fetch(`${API_BASE}/connect`, { method: "POST" });
       const data = await response.json();
+
       if (data.status === "connected") {
         setConnected(true);
-        setError("");
+        setError("Connection successful!");
+        setTimeout(() => setError(""), 3000);
+      } else {
+        throw new Error("Connection failed");
       }
     } catch (err) {
-      setError("Failed to connect to drone");
+      setError("Failed to connect to drone. Please check WiFi connection.");
+    } finally {
+      setConnecting(false);
     }
   };
 
@@ -127,7 +147,8 @@ const DroneInterface = () => {
     try {
       await fetch(`${API_BASE}/disconnect`, { method: "POST" });
       setConnected(false);
-      setError("");
+      setError("Disconnected successfully");
+      setTimeout(() => setError(""), 3000);
     } catch (err) {
       setError("Failed to disconnect from drone");
     }
@@ -234,7 +255,11 @@ const DroneInterface = () => {
               Tello Drone Control
               <div className="status-bar">
                 <span className={connected ? "connected" : "disconnected"}>
-                  {connected ? "● Connected" : "○ Disconnected"}
+                  {connected
+                    ? "● Connected"
+                    : connecting
+                    ? "◌ Connecting..."
+                    : "○ Disconnected"}
                 </span>
                 <span>Battery: {battery}%</span>
               </div>
@@ -244,10 +269,17 @@ const DroneInterface = () => {
           <div className="button-container">
             <div className="connection-controls">
               <button
-                className={`button ${connected ? "danger" : ""}`}
+                className={`button ${connected ? "danger" : ""} ${
+                  connecting ? "connecting" : ""
+                }`}
                 onClick={connected ? handleDisconnect : handleConnect}
+                disabled={connecting}
               >
-                {connected ? "Disconnect" : "Connect"}
+                {connecting
+                  ? "Connecting..."
+                  : connected
+                  ? "Disconnect"
+                  : "Connect"}
               </button>
               <button
                 className={`button calibrate ${
