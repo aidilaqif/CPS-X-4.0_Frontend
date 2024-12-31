@@ -48,6 +48,8 @@ const ItemManagement = () => {
       total_pieces: "",
     },
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const API_BASE_URL =
     process.env.REACT_APP_API_BASE_URL || "http://localhost:3000";
@@ -148,6 +150,75 @@ const ItemManagement = () => {
     }));
   };
 
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  const totalItems = sortedItems.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = sortedItems.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const PaginationControls = () => {
+    return (
+      <div className="item-management-pagination">
+        <div className="pagination-left">
+          <select
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className="items-per-page-select"
+          >
+            <option value="10">10 items</option>
+            <option value="20">20 items</option>
+            <option value="30">30 items</option>
+            <option value="40">40 items</option>
+            <option value="50">50 items</option>
+          </select>
+          <span className="showing-text">
+            Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
+            {totalItems} items
+          </span>
+        </div>
+        <div className="pagination-right">
+          <button
+            className="page-nav"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            ‹
+          </button>
+          {[...Array(totalPages)].map((_, index) => {
+            const pageNumber = index + 1;
+            return (
+              <button
+                key={pageNumber}
+                onClick={() => handlePageChange(pageNumber)}
+                className={`page-number ${
+                  currentPage === pageNumber ? "active" : ""
+                }`}
+              >
+                {pageNumber}
+              </button>
+            );
+          })}
+          <button
+            className="page-nav"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            ›
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const resetForm = () => {
     setFormData({
       label_id: "",
@@ -232,15 +303,6 @@ const ItemManagement = () => {
       console.error("Error creating item:", err);
       setError("Failed to create item");
     }
-  };
-
-  const formatStatus = (status) => {
-    const statusMap = {
-      Unresolved: "bg-yellow-100 text-yellow-800",
-      Available: "bg-green-100 text-green-800",
-      "Checked Out": "bg-blue-100 text-blue-800",
-    };
-    return statusMap[status] || "bg-gray-100 text-gray-800";
   };
 
   const formatDate = (dateString) => {
@@ -352,69 +414,78 @@ const ItemManagement = () => {
         <table className="item-management-table">
           <thead>
             <tr>
-              <th>Expand</th>
-              <th onClick={() => handleSort("label_id")}>
-                <div className="flex items-center gap-1">
-                  Label ID
+              <th data-column="expand">EXPAND</th>
+              <th data-column="label_id" onClick={() => handleSort("label_id")}>
+                <div className="header-content">
+                  LABEL ID
                   {renderSortIcon("label_id")}
                 </div>
               </th>
-              <th onClick={() => handleSort("label_type")}>
-                <div className="flex items-center gap-1">
-                  Type
-                  {renderSortIcon("label_type")}
+              <th data-column="type" onClick={() => handleSort("type")}>
+                <div className="header-content">
+                  TYPE
+                  {renderSortIcon("type")}
                 </div>
               </th>
-              <th onClick={() => handleSort("location_id")}>
-                <div className="flex items-center gap-1">
-                  Location
-                  {renderSortIcon("location_id")}
+              <th data-column="location" onClick={() => handleSort("location")}>
+                <div className="header-content">
+                  LOCATION
+                  {renderSortIcon("location")}
                 </div>
               </th>
-              <th onClick={() => handleSort("status")}>
-                <div className="flex items-center gap-1">
-                  Status
+              <th data-column="status" onClick={() => handleSort("status")}>
+                <div className="header-content">
+                  STATUS
                   {renderSortIcon("status")}
                 </div>
               </th>
-              <th onClick={() => handleSort("last_scan_time")}>
-                <div className="flex items-center gap-1">
-                  Last Scan
-                  {renderSortIcon("last_scan_time")}
+              <th
+                data-column="last_scan"
+                onClick={() => handleSort("last_scan")}
+              >
+                <div className="header-content">
+                  LAST SCAN
+                  {renderSortIcon("last_scan")}
                 </div>
               </th>
-              <th>Actions</th>
+              <th data-column="actions">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            {sortedItems.map((item) => (
+            {currentItems.map((item) => (
               <React.Fragment key={item.label_id}>
                 <tr>
-                  <td>
-                    <button onClick={() => handleRowExpand(item.label_id)}>
+                  <td data-column="expand">
+                    <button
+                      onClick={() => handleRowExpand(item.label_id)}
+                      className={`item-management-expand-button ${
+                        expandedRows.has(item.label_id) ? "active" : ""
+                      }`}
+                    >
                       {expandedRows.has(item.label_id) ? (
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown />
                       ) : (
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight />
                       )}
                     </button>
                   </td>
-                  <td>{item.label_id}</td>
-                  <td>{item.label_type}</td>
-                  <td>{item.location_id}</td>
-                  <td>
+                  <td data-column="label_id">{item.label_id}</td>
+                  <td data-column="type">{item.label_type}</td>
+                  <td data-column="location">{item.location_id}</td>
+                  <td data-column="status">
                     <span
-                      className={`item-management-status ${
-                        item.status === "Resolved"
-                          ? "item-management-status-resolved"
-                          : "item-management-status-unresolved"
-                      }`}
+                      className={`item-management-status item-management-status-${item.status.replace(
+                        " ",
+                        "_"
+                      )}`}
                     >
                       {item.status}
                     </span>
                   </td>
-                  <td>{formatDate(item.last_scan_time)}</td>
-                  <td>
+                  <td data-column="last_scan">
+                    {formatDate(item.last_scan_time)}
+                  </td>
+                  <td data-column="actions">
                     <button
                       onClick={() =>
                         setDeleteConfirm({
@@ -481,6 +552,7 @@ const ItemManagement = () => {
             ))}
           </tbody>
         </table>
+        <PaginationControls />
       </div>
 
       {/* Delete Confirmation Modal */}
