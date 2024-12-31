@@ -1,41 +1,118 @@
-const API_BASE = process.env.REACT_APP_API_BASE_URL;
+// src/services/dashboard.service.js
+import moment from 'moment-timezone';
 
-/**
- * Fetch drone coverage statistics.
- * @returns {Promise<Object>}
- */
-export const fetchDroneCoverage = async () => {
-  const response = await fetch(`${API_BASE}/api/drone-coverage`);
-  if (!response.ok) throw new Error("Failed to fetch drone coverage");
-  return response.json();
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+
+// Process flights by hour helper function
+const processFlightsByHour = (flights) => {
+  const hourCounts = Array(24).fill(0);
+  flights.forEach(flight => {
+    if (flight.start_time) {
+      const hour = moment(flight.start_time).hour();
+      hourCounts[hour]++;
+    }
+  });
+  return hourCounts.map((count, hour) => ({
+    hour: `${hour.toString().padStart(2, '0')}:00`,
+    flights: count
+  }));
 };
 
-/**
- * Fetch stock take statistics.
- * @returns {Promise<Object>}
- */
-export const fetchStockTakeStats = async () => {
-  const response = await fetch(`${API_BASE}/api/stock-take-stats`);
-  if (!response.ok) throw new Error("Failed to fetch stock take statistics");
-  return response.json();
+// Process items data helper function
+const processItemsData = (items) => {
+  return {
+    total: items.length,
+    byType: {
+      'Roll': items.filter(item => item.label_type === 'Roll').length,
+      'FG Pallet': items.filter(item => item.label_type === 'FG Pallet').length
+    },
+    byStatus: {
+      'Available': items.filter(item => item.status === 'Available').length,
+      'Checked Out': items.filter(item => item.status === 'Checked Out').length,
+      'Lost': items.filter(item => item.status === 'Lost').length,
+      'Unresolved': items.filter(item => item.status === 'Unresolved').length
+    }
+  };
 };
 
-/**
- * Fetch relocation statistics.
- * @returns {Promise<Object>}
- */
-export const fetchRelocationStats = async () => {
-  const response = await fetch(`${API_BASE}/api/relocation-stats`);
-  if (!response.ok) throw new Error("Failed to fetch relocation statistics");
-  return response.json();
+// Process flight data helper function
+const processFlightData = (flights) => {
+  return {
+    total: flights.length,
+    totalCommands: flights.reduce((sum, flight) => sum + (flight.total_commands || 0), 0),
+    avgBatteryUsage: flights.reduce((sum, flight) => {
+      const usage = (flight.battery_start || 0) - (flight.battery_end || 0);
+      return sum + (usage > 0 ? usage : 0);
+    }, 0) / (flights.length || 1),
+    byHour: processFlightsByHour(flights)
+  };
 };
 
-/**
- * Fetch movement history.
- * @returns {Promise<Object[]>}
- */
-export const fetchMovementHistory = async () => {
-  const response = await fetch(`${API_BASE}/api/movement-stats`);
-  if (!response.ok) throw new Error("Failed to fetch movement history");
-  return response.json();
+// Process location data helper function
+const processLocationData = (locations) => {
+  return {
+    total: locations.length,
+    byType: locations.reduce((acc, loc) => {
+      acc[loc.type_name] = (acc[loc.type_name] || 0) + 1;
+      return acc;
+    }, {})
+  };
+};
+
+export const dashboardService = {
+  // Fetch all dashboard data
+  async getDashboardData() {
+    try {
+      const [itemsResponse, flightResponse, locationsResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/items`),
+        fetch(`${API_BASE_URL}/api/movement-logs`),
+        fetch(`${API_BASE_URL}/api/locations`)
+      ]);
+
+      const itemsData = await itemsResponse.json();
+      const flightData = await flightResponse.json();
+      const locationsData = await locationsResponse.json();
+
+      const items = itemsData.data || [];
+      const flights = flightData.data || [];
+      const locations = locationsData.data || [];
+
+      return {
+        itemStats: processItemsData(items),
+        flightStats: processFlightData(flights),
+        locationStats: processLocationData(locations)
+      };
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      throw new Error('Failed to fetch dashboard data');
+    }
+  },
+
+  // Transform data for charts
+  transformChartData(data) {
+    if (!data) return { statusData: [], typeData: [], locationTypeData: [] };
+
+    const { itemStats, locationStats } = data;
+
+    const statusData = itemStats?.byStatus ? 
+      Object.entries(itemStats.byStatus)
+        .map(([name, value]) => ({ name, value: value || 0 }))
+        .filter(item => item.value > 0) : [];
+
+    const typeData = itemStats?.byType ?
+      Object.entries(itemStats.byType)
+        .map(([name, value]) => ({ name, value: value || 0 }))
+        .filter(item => item.value > 0) : [];
+
+    const locationTypeData = locationStats?.byType ?
+      Object.entries(locationStats.byType)
+        .map(([name, value]) => ({ name, value: value || 0 }))
+        .filter(item => item.value > 0) : [];
+
+    return {
+      statusData,
+      typeData,
+      locationTypeData
+    };
+  }
 };
