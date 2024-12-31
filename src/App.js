@@ -11,11 +11,13 @@ import "antd/dist/reset.css";
 import Dashboard from "./components/dashboard/Dashboard";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("drone");
+  const [currentPage, setCurrentPage] = useState("renderPage");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const renderPage = () => {
     switch (currentPage) {
+      case "renderPage":
+        return <Dashboard/>;
       case "drone":
         return <DroneInterface />;
       case "autopilot":
@@ -26,8 +28,6 @@ function App() {
         return <LocationManagement />;
       case "exports":
         return <Export />;
-      case "renderPage":
-        return <Dashboard/>;
       default:
         return <Dashboard />;
     }
