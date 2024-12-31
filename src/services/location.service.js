@@ -21,6 +21,16 @@ export const locationService = {
         });
         if(!response.ok) throw new Error('Failed to create location');
         return response.json();
+    },
+    async deleteLocation(id){
+        const response = await fetch(endpoints.locations.delete, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if(!response.ok) throw new Error('Failed to delete location');
+        return response.json();
     }
 };
 

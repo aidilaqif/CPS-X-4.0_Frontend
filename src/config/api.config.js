@@ -18,6 +18,7 @@ export const endpoints = {
     getAll: `${API_BASE_URL}/api/locations`,
     getById: (id) => `${API_BASE_URL}/api/locations/${id}`,
     create: `${API_BASE_URL}/api/locations`,
+    delete: (id) => `${API_BASE_URL}/api/locations/${id}`
   },
   export: {
     csv: `${API_BASE_URL}/api/export/csv`,
