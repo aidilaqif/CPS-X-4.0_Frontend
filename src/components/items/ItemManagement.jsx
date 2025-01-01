@@ -9,8 +9,10 @@ import {
   Trash2,
   ChevronRight,
   ChevronLeft,
+  Edit2,
 } from "lucide-react";
 import "../../assets/styles/components/ItemManagement.css";
+import { itemService } from "../../services/item.service";
 
 const ItemManagement = () => {
   const [items, setItems] = useState([]);
@@ -50,6 +52,12 @@ const ItemManagement = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [editForm, setEditForm] = useState({
+    status: "",
+    location_id: "",
+  });
 
   const API_BASE_URL =
     process.env.REACT_APP_API_BASE_URL || "http://localhost:3000";
@@ -305,6 +313,50 @@ const ItemManagement = () => {
     }
   };
 
+  // Handle edit button click
+  const handleEditClick = (item) => {
+    setEditingItem(item);
+    setEditForm({
+      status: item.status,
+      location_id: item.location_id,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // Handle form submission
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      if (editForm.status !== editingItem.status) {
+        await itemService.updateItemStatus(
+          editingItem.label_id,
+          editForm.status
+        );
+      }
+
+      if (editForm.location_id !== editingItem.location_id) {
+        await itemService.updateItemLocation(
+          editingItem.label_id,
+          editForm.location_id
+        );
+      }
+
+      // Refresh items list
+      const response = await itemService.getAllItems();
+      setItems(response.data);
+
+      setIsEditModalOpen(false);
+      setEditingItem(null);
+      setEditForm({ status: "", location_id: "" });
+    } catch (err) {
+      setError("Failed to update item");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString)
       return <span className="text-blue-600 font-medium">New Scan</span>;
@@ -487,6 +539,12 @@ const ItemManagement = () => {
                   </td>
                   <td data-column="actions">
                     <button
+                      onClick={() => handleEditClick(item)}
+                      className="item-management-button-icon"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() =>
                         setDeleteConfirm({
                           isOpen: true,
@@ -600,6 +658,88 @@ const ItemManagement = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="item-management-modal-overlay">
+          <div className="item-management-modal">
+            <div className="item-management-modal-header">
+              <h2>Edit Item</h2>
+              <button
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingItem(null);
+                }}
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="item-management-form">
+              <div className="item-management-form-group">
+                <label>Status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, status: e.target.value }))
+                  }
+                  required
+                >
+                  <option value="Available">Available</option>
+                  <option value="Checked Out">Checked Out</option>
+                  <option value="Lost">Lost</option>
+                  <option value="Unresolved">Unresolved</option>
+                </select>
+              </div>
+              <div className="item-management-form-group">
+                <label>Location</label>
+                <select
+                  value={editForm.location_id}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      location_id: e.target.value,
+                    }))
+                  }
+                  required
+                >
+                  {locations
+                    .filter((loc) =>
+                      editingItem?.label_type === "Roll"
+                        ? loc.type_name === "Paper Roll Location"
+                        : loc.type_name === "FG Location"
+                    )
+                    .map((location) => (
+                      <option
+                        key={location.location_id}
+                        value={location.location_id}
+                      >
+                        {location.location_id} - {location.type_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="item-management-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingItem(null);
+                  }}
+                  className="item-management-button item-management-button-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="item-management-button item-management-button-primary"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
