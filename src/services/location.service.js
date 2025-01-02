@@ -23,7 +23,7 @@ export const locationService = {
         return response.json();
     },
     async deleteLocation(id){
-        const response = await fetch(endpoints.locations.delete, {
+        const response = await fetch(endpoints.locations.delete(id), {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Loader2, Plus, X, Trash2, ChevronDown , ChevronUp} from "lucide-react";
+import {
+  MapPin,
+  Loader2,
+  Plus,
+  X,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { locationService } from "../../services/location.service";
 import "../../assets/styles/components/LocationManagement.css";
 
@@ -71,7 +79,7 @@ const LocationManagement = () => {
       // Refresh the locations list after successful deletion
       await fetchLocation();
       // Close the confirmation dialog
-      setDeleteConfirm({ isOpen: false, locationId: null, locationLabel: ""});
+      setDeleteConfirm({ isOpen: false, locationId: null, locationLabel: "" });
     } catch (err) {
       console.error("Error deleting location:", err);
       setError("Failed to delete location: " + err.message);
@@ -80,22 +88,28 @@ const LocationManagement = () => {
 
   // Get unique values for filters
   const getUniqueValues = (field) => {
-    return [...new Set(locations.map((location) => location[field]))].filter(Boolean);
+    return [...new Set(locations.map((location) => location[field]))].filter(
+      Boolean
+    );
   };
 
   // Handle sorting
   const handleSort = (field) => {
     setSorting((prev) => ({
       field,
-      direction: prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+      direction:
+        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
   // Filter and sort locations
-  const filteredLocations = locations.filter((location)=>{
-    return(
+  const filteredLocations = locations.filter((location) => {
+    return (
       (filters.type_name === "" || location.type_name === filters.type_name) &&
-      (filters.location_id === "" || location.location_id.toLowerCase().includes(filters.location_id.toLowerCase()))
+      (filters.location_id === "" ||
+        location.location_id
+          .toLowerCase()
+          .includes(filters.location_id.toLowerCase()))
     );
   });
 
@@ -105,17 +119,17 @@ const LocationManagement = () => {
     let valueA = a[sorting.field];
     let valueB = b[sorting.field];
 
-    if (typeof valueA === 'string') valueA = valueA.toLowerCase();
-    if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+    if (typeof valueA === "string") valueA = valueA.toLowerCase();
+    if (typeof valueB === "string") valueB = valueB.toLowerCase();
 
-    if (valueA < valueB) return sorting.direction === 'asc' ? -1: 1;
-    if (valueB < valueA) return sorting.direction === 'asc' ? 1: -1;
+    if (valueA < valueB) return sorting.direction === "asc" ? -1 : 1;
+    if (valueB < valueA) return sorting.direction === "asc" ? 1 : -1;
     return 0;
   });
 
   const renderSortIcon = (field) => {
     if (sorting.field !== field) return null;
-    return sorting.direction === 'asc' ? (
+    return sorting.direction === "asc" ? (
       <ChevronUp className="w-4 h-4" />
     ) : (
       <ChevronDown className="w-4 h-4" />
@@ -153,33 +167,37 @@ const LocationManagement = () => {
       <div className="location-management-filters">
         <input
           type="text"
-          placeholder="Filter by Location ID"
+          placeholder="Search Location"
           value={filters.location_id}
-          onChange={(e) => setFilters(prev => ({...prev, location_id: e.target.value}))}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, location_id: e.target.value }))
+          }
           className="location-management-filter"
         />
         <select
           value={filters.type_name}
-          onChange={(e) => setFilters(prev => ({...prev, type_name: e.target.value}))}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, type_name: e.target.value }))
+          }
           className="location-management-filter"
         >
           <option value="">All Types</option>
-          {getUniqueValues("type_name").map((type) =>(
+          {getUniqueValues("type_name").map((type) => (
             <option key={type} value={type}>
               {type}
             </option>
           ))}
         </select>
       </div>
-      
+
       <div className="location-management-table-container">
         <table className="location-management-table">
           <thead>
             <tr>
               <th onClick={() => handleSort("location_id")}>
                 <div className="flex items-center gap-1 cursor-pointer">
-                Location ID
-                {renderSortIcon("location_id")}
+                  Location ID
+                  {renderSortIcon("location_id")}
                 </div>
               </th>
               <th onClick={() => handleSort("type_name")}>
@@ -249,14 +267,20 @@ const LocationManagement = () => {
               </div>
 
               <div className="location-management-form-group">
-                <label>Type Name</label>
-                <input
-                  type="text"
+                <label htmlFor="type_name">Type Name</label>
+                <select
+                  id="type_name"
                   name="type_name"
                   value={formData.type_name}
                   onChange={handleInputChange}
                   required
-                />
+                >
+                  <option value="">Select Type</option>
+                  <option value="Paper Roll Location">
+                    Paper Roll Location
+                  </option>
+                  <option value="FG Location">FG Pallet Location</option>
+                </select>
               </div>
 
               <div className="location-management-modal-footer">
@@ -303,7 +327,9 @@ const LocationManagement = () => {
             <div className="location-management-modal-content">
               <p>
                 Are you sure you want to delete location{" "}
-                <span className="font-semibold">{deleteConfirm.locationLabel}</span>
+                <span className="font-semibold">
+                  {deleteConfirm.locationLabel}
+                </span>
                 ? This action cannot be undone.
               </p>
               <div className="location-management-modal-footer">
