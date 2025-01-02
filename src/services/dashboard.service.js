@@ -22,6 +22,7 @@ const processFlightsByHour = (flights) => {
 const processItemsData = (items) => {
   return {
     total: items.length,
+    items: items, // Added this line to include raw items data
     byType: {
       'Roll': items.filter(item => item.label_type === 'Roll').length,
       'FG Pallet': items.filter(item => item.label_type === 'FG Pallet').length
@@ -52,6 +53,7 @@ const processFlightData = (flights) => {
 const processLocationData = (locations) => {
   return {
     total: locations.length,
+    locations: locations, // Added this line to include raw locations data
     byType: locations.reduce((acc, loc) => {
       acc[loc.type_name] = (acc[loc.type_name] || 0) + 1;
       return acc;
