@@ -1,3 +1,14 @@
+/* Base styles and variables */
+:root {
+  --primary-color: #3b82f6;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --success-color: #34d399;
+  --warning-color: #fbbf24;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+ }
+
 /* Dashboard Container */
 .dashboard-container {
   padding: 1.5rem;
@@ -19,6 +30,31 @@
   color: #1e293b;
   margin: 0;
 }
+
+/* Dashboard Section */
+.dashboard-section {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--card-shadow);
+ }
+ 
+ .dashboard-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+ }
+ 
+ .dashboard-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+ }
 
 /* Summary Cards Section */
 .summary-cards-grid {
@@ -329,114 +365,145 @@
   }
 }
 
+/* Location Status Legend */
+.location-status-legend {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+ }
+ 
+ .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+ }
+ 
+ .legend-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+ }
+ 
+ .legend-indicator.recent {
+  background-color: var(--success-color);
+  border: 1px solid #059669;
+ }
+ 
+ .legend-indicator.outdated {
+  background-color: var(--warning-color);
+  border: 1px solid #d97706;
+ }
+ 
+
 /*** Location Overview ***/
 .location-overview-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.75rem;
-}
-
-.location-card {
+ }
+ 
+ .location-card {
   background: white;
   border-radius: 0.5rem;
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   transition: transform 0.2s ease;
   display: flex;
   flex-direction: column;
   min-width: 180px;
-}
-
-.location-card:hover {
+ }
+ 
+ .location-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-}
-
-.location-card-outdated {
-  border-left: 3px solid #fbbf24;
-}
-
-.location-card-recent {
-  border-left: 3px solid #34d399;
-}
-
-.location-card-content {
+ }
+ 
+ .location-card-outdated {
+  border-left: 3px solid var(--warning-color);
+ }
+ 
+ .location-card-recent {
+  border-left: 3px solid var(--success-color);
+ }
+ 
+ .location-card-content {
   padding: 1rem;
   flex: 1;
-}
-
-.location-card-header {
+ }
+ 
+ .location-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
-}
-
-.location-card-title {
+ }
+ 
+ .location-card-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
-}
-
-.location-card-subtitle {
+ }
+ 
+ .location-card-subtitle {
   font-size: 0.75rem;
-  color: #64748b;
-}
-
-.location-card-icon {
+  color: var(--text-secondary);
+ }
+ 
+ .location-card-icon {
   background: #eff6ff;
   padding: 0.5rem;
   border-radius: 0.375rem;
-  color: #3b82f6;
-}
-
-.location-card-stats {
+  color: var(--primary-color);
+ }
+ 
+ .location-card-stats {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.location-stat {
+ }
+ 
+ .location-stat {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.25rem 0;
-}
-
-.stat-label {
+ }
+ 
+ .stat-label {
   font-size: 0.75rem;
-  color: #64748b;
-}
-
-.stat-value {
+  color: var(--text-secondary);
+ }
+ 
+ .stat-value {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #1e293b;
-}
-
-.location-card-footer {
+  color: var(--text-primary);
+ }
+ 
+ .location-card-footer {
   padding: 0.75rem 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
   background: #f8fafc;
   border-bottom-left-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
-}
-
-.last-scan {
+ }
+ 
+ .last-scan {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 0.75rem;
-}
-
-.last-scan-icon {
+ }
+ 
+ .last-scan-icon {
   width: 0.875rem;
   height: 0.875rem;
   color: #94a3b8;
-}
+ }
 
-
+/* Responsive Design */
 @media (max-width: 1536px) {
   .location-overview-grid {
       grid-template-columns: repeat(4, 1fr);
@@ -461,33 +528,93 @@
   }
 }
 
-/* Location Filte */
+/* Location Filter Styles */
 .location-filter {
   margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
 }
 
 .filter-buttons {
   display: inline-flex;
-  padding: 4px;
-  background-color: #f0f0f0;
-  border-radius: 9999px;
+  /* padding: 0.25rem; */
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
 }
 
 .filter-btn {
-  padding: 8px 16px;
+  padding: 0.75rem 1.25rem;
   border: none;
-  background: none;
-  border-radius: 9999px;
+  background: transparent;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-btn:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    rgba(59, 130, 246, 0.1),
+    rgba(59, 130, 246, 0.05)
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .filter-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+.filter-btn:hover:before {
+  opacity: 1;
 }
 
 .filter-btn.active {
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  color: var(--primary-color);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.filter-btn.active:before {
+  opacity: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-buttons {
+    display: flex;
+    width: 100%;
+  }
+
+  .filter-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.625rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    width: 100%;
+  }
 }
