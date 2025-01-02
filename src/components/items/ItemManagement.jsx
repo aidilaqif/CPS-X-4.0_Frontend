@@ -8,7 +8,6 @@ import {
   X,
   Trash2,
   ChevronRight,
-  ChevronLeft,
   Edit2,
 } from "lucide-react";
 import "../../assets/styles/components/ItemManagement.css";
