@@ -61,6 +61,52 @@ const processLocationData = (locations) => {
   };
 };
 
+const calculateTypeDistribution = (items) => {
+  const typeCount = {
+    'Roll': 0,
+    'FG Pallet': 0
+  };
+
+  items.forEach(item => {
+    if (typeCount.hasOwnProperty(item.label_type)) {
+      typeCount[item.label_type]++;
+    }
+  });
+
+  return Object.entries(typeCount).map(([name, value]) => ({
+    name,
+    value
+  }));
+};
+
+const calculateLocationUtilization = (items, locations) => {
+  const locationMap = new Map();
+  
+  // Initialize all locations
+  locations.forEach(loc => {
+    locationMap.set(loc.location_id, {
+      locationId: loc.location_id,
+      typeName: loc.type_name,
+      itemCount: 0,
+      capacity: loc.type_name === 'Paper Roll Location' ? 50 : 30,
+      utilization: 0
+    });
+  });
+
+  // Count items
+  items.forEach(item => {
+    if (locationMap.has(item.location_id)) {
+      const location = locationMap.get(item.location_id);
+      location.itemCount++;
+      location.utilization = Math.round((location.itemCount / location.capacity) * 100);
+    }
+  });
+
+  // Return all locations sorted by utilization
+  return Array.from(locationMap.values())
+    .sort((a, b) => b.utilization - a.utilization);
+};
+
 export const dashboardService = {
   // Fetch all dashboard data
   async getDashboardData() {
@@ -91,30 +137,15 @@ export const dashboardService = {
   },
 
   // Transform data for charts
-  transformChartData(data) {
-    if (!data) return { statusData: [], typeData: [], locationTypeData: [] };
-
-    const { itemStats, locationStats } = data;
-
-    const statusData = itemStats?.byStatus ? 
-      Object.entries(itemStats.byStatus)
-        .map(([name, value]) => ({ name, value: value || 0 }))
-        .filter(item => item.value > 0) : [];
-
-    const typeData = itemStats?.byType ?
-      Object.entries(itemStats.byType)
-        .map(([name, value]) => ({ name, value: value || 0 }))
-        .filter(item => item.value > 0) : [];
-
-    const locationTypeData = locationStats?.byType ?
-      Object.entries(locationStats.byType)
-        .map(([name, value]) => ({ name, value: value || 0 }))
-        .filter(item => item.value > 0) : [];
+  transformChartData({ itemStats, locationStats }) {
+    if (!itemStats || !locationStats) return {
+      typeData: [],
+      locationData: []
+    };
 
     return {
-      statusData,
-      typeData,
-      locationTypeData
+      typeData: calculateTypeDistribution(itemStats.items),
+      locationData: calculateLocationUtilization(itemStats.items, locationStats.locations)
     };
-  }
+  },
 };

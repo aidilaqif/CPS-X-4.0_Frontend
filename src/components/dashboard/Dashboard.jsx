@@ -34,11 +34,10 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const { statusData, typeData, locationTypeData } =
-    dashboardService.transformChartData({
-      itemStats,
-      locationStats,
-    });
+  const { typeData, locationData } = dashboardService.transformChartData({
+    itemStats,
+    locationStats,
+  });
 
   if (loading) {
     return (
@@ -95,7 +94,7 @@ const Dashboard = () => {
 
       <div className="charts-container">
         <div className="distribution-charts-grid">
-          <DistributionCharts statusData={statusData} typeData={typeData} />
+          <DistributionCharts typeData={typeData} locationData={locationData} />
         </div>
 
         {/* <div className="full-width-chart">
