@@ -63,8 +63,8 @@ const DistributionCharts = ({ typeData, locationData }) => {
               Paper Roll Location
             </button>
             <button 
-              className={`filter-btn ${selectedFilter === 'FG Location' ? 'active' : ''}`}
-              onClick={() => setSelectedFilter('FG Location')}
+              className={`filter-btn ${selectedFilter === 'FG Pallet Location' ? 'active' : ''}`}
+              onClick={() => setSelectedFilter('FG Pallet Location')}
             >
               FG Pallet Location
             </button>
