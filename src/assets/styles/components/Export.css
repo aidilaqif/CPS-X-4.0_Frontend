@@ -300,3 +300,34 @@
     border-radius: 0.375rem;
     margin-top: 1rem;
   }
+
+  .export-preview-wrapper {
+    margin-top: 2rem;
+  }
+  
+  .export-preview-section {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+  }
+  
+  .export-preview-section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+  
+  /* Make the preview tables more compact for the main view */
+  .export-preview-section .export-preview-table td,
+  .export-preview-section .export-preview-table th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Add some spacing between preview sections */
+  .export-preview-section + .export-preview-section {
+    margin-top: 2rem;
+  }

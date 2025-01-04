@@ -1,12 +1,12 @@
-// src/components/dashboard/Dashboard.jsx
-import React, { useState, useEffect } from 'react';
-import { Loader2, Package, Plane, MapPin, Clock } from 'lucide-react';
-import { dashboardService } from '../../services/dashboard.service';
-import DistributionCharts from './DistributionCharts';
-import FlightActivityChart from './FlightActivityChart';
-import LocationChart from './LocationChart';
-import SummaryCard from './SummaryCard';
-import '../../assets/styles/components/Dashboard.css';
+import React, { useState, useEffect } from "react";
+import { Loader2, Package, Plane, MapPin, Clock } from "lucide-react";
+import { dashboardService } from "../../services/dashboard.service";
+import DistributionCharts from "./DistributionCharts";
+import FlightActivityChart from "./FlightActivityChart";
+import LocationChart from "./LocationChart";
+import LocationOverview from "./LocationOverview";
+import SummaryCard from "./SummaryCard";
+import "../../assets/styles/components/Dashboard.css";
 
 const Dashboard = () => {
   const [itemStats, setItemStats] = useState(null);
@@ -24,8 +24,8 @@ const Dashboard = () => {
         setFlightStats(data.flightStats);
         setLocationStats(data.locationStats);
       } catch (err) {
-        console.error('Dashboard error:', err);
-        setError('Failed to fetch dashboard data');
+        console.error("Dashboard error:", err);
+        setError("Failed to fetch dashboard data");
       } finally {
         setLoading(false);
       }
@@ -34,9 +34,9 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const { statusData, typeData, locationTypeData } = dashboardService.transformChartData({
+  const { typeData, locationData } = dashboardService.transformChartData({
     itemStats,
-    locationStats
+    locationStats,
   });
 
   if (loading) {
@@ -62,28 +62,28 @@ const Dashboard = () => {
       </header>
 
       <div className="summary-cards-grid">
-        <SummaryCard 
+        <SummaryCard
           icon={Package}
           title="Total Items"
           value={itemStats?.total || 0}
           bgColor="bg-blue-100"
           iconColor="text-blue-600"
         />
-        <SummaryCard 
+        <SummaryCard
           icon={Plane}
           title="Flight Sessions"
           value={flightStats?.total || 0}
           bgColor="bg-green-100"
           iconColor="text-green-600"
         />
-        <SummaryCard 
+        <SummaryCard
           icon={MapPin}
           title="Locations"
           value={locationStats?.total || 0}
           bgColor="bg-yellow-100"
           iconColor="text-yellow-600"
         />
-        <SummaryCard 
+        <SummaryCard
           icon={Clock}
           title="Total Commands"
           value={flightStats?.totalCommands || 0}
@@ -94,18 +94,21 @@ const Dashboard = () => {
 
       <div className="charts-container">
         <div className="distribution-charts-grid">
-          <DistributionCharts 
-            statusData={statusData}
-            typeData={typeData}
-          />
+          <DistributionCharts typeData={typeData} locationData={locationData} />
         </div>
 
-        <div className="full-width-chart">
+        {/* <div className="full-width-chart">
           <FlightActivityChart flightStats={flightStats} />
         </div>
 
         <div className="full-width-chart">
           <LocationChart locationTypeData={locationTypeData} />
+        </div> */}
+        <div className="full-width-chart">
+          <LocationOverview
+            locations={locationStats?.locations || []}
+            items={itemStats?.items || []}
+          />
         </div>
       </div>
     </div>

@@ -1,40 +1,26 @@
-// src/components/dashboard/DistributionCharts.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import ChartWrapper from './ChartWrapper';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = {
+  Roll: '#3b82f6',
+  'FG Pallet': '#22c55e'
+};
 
-const DistributionCharts = ({ statusData, typeData }) => {
+const DistributionCharts = ({ typeData, locationData }) => {
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  
+  const filteredLocations = locationData.filter(loc => {
+    if (selectedFilter === 'all') return true;
+    return loc.typeName === selectedFilter;
+  });
   return (
-    <>
-      {statusData.length > 0 && (
-        <ChartWrapper title="Item Status Distribution">
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={statusData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                label
-              >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
-      )}
-
-      {typeData.length > 0 && (
-        <ChartWrapper title="Item Type Distribution">
-          <ResponsiveContainer>
+    <div className="distribution-container">
+      <div className="donut-chart-container">
+        <div className="chart-header">
+          <h3 className="chart-title">Item Type Distribution</h3>
+        </div>
+        <div className="chart-content donut">
+          <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
                 data={typeData}
@@ -42,20 +28,67 @@ const DistributionCharts = ({ statusData, typeData }) => {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={120}
+                innerRadius={60}
+                outerRadius={90}
                 label
               >
-                {typeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {typeData.map((entry) => (
+                  <Cell key={entry.name} fill={COLORS[entry.name]} />
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
-        </ChartWrapper>
-      )}
-    </>
+        </div>
+      </div>
+
+      <div className="location-chart-container">
+        <div className="chart-header">
+          <h3 className="chart-title">Location Utilization</h3>
+        </div>
+        
+        <div className="location-filter">
+          <div className="filter-buttons">
+            <button 
+              className={`filter-btn ${selectedFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setSelectedFilter('all')}
+            >
+              All
+            </button>
+            <button 
+              className={`filter-btn ${selectedFilter === 'Paper Roll Location' ? 'active' : ''}`}
+              onClick={() => setSelectedFilter('Paper Roll Location')}
+            >
+              Paper Roll Location
+            </button>
+            <button 
+              className={`filter-btn ${selectedFilter === 'FG Pallet Location' ? 'active' : ''}`}
+              onClick={() => setSelectedFilter('FG Pallet Location')}
+            >
+              FG Pallet Location
+            </button>
+          </div>
+        </div>
+
+        <div className="chart-content">
+          {filteredLocations.map((location) => (
+            <div key={location.locationId} className="location-bar">
+              <span className="location-label">{location.locationId}</span>
+              <div className="location-bar-container">
+                <div
+                  className="location-bar-fill"
+                  style={{ width: `${location.utilization}%` }}
+                />
+              </div>
+              <span className="location-value">
+                {location.itemCount} items ({location.utilization}%)
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 

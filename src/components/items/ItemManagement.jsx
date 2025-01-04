@@ -8,7 +8,6 @@ import {
   X,
   Trash2,
   ChevronRight,
-  ChevronLeft,
   Edit2,
 } from "lucide-react";
 import "../../assets/styles/components/ItemManagement.css";
@@ -709,7 +708,7 @@ const ItemManagement = () => {
                     .filter((loc) =>
                       editingItem?.label_type === "Roll"
                         ? loc.type_name === "Paper Roll Location"
-                        : loc.type_name === "FG Location"
+                        : loc.type_name === "FG Pallet Location"
                     )
                     .map((location) => (
                       <option
