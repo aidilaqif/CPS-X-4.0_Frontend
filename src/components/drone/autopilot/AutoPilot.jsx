@@ -26,6 +26,8 @@ const AutoPilot = () => {
   const API_BASE = process.env.REACT_APP_API_URL;
   const CPS_API_BASE = process.env.REACT_APP_API_BASE_URL;
 
+  // For both DroneInterface.jsx and AutoPilot.jsx
+
   useEffect(() => {
     fetchFlightSessions();
     const fetchData = async () => {
@@ -37,37 +39,46 @@ const AutoPilot = () => {
         setBattery(statusData.battery);
         setQrResult(statusData.qr_result);
 
-        // Fetch scanned items
-        const scannedItemsResponse = await fetch(`${API_BASE}/scanned-items`);
-        const scannedItemsData = await scannedItemsResponse.json();
-        setScannedItems(
-          scannedItemsData.items.map((item) => ({
-            ...item,
-            key: item.label_id + item.timestamp, // Add key for Ant Design Table
-          }))
-        );
+        // Only fetch scanned items if drone is connected
+        if (statusData.connected) {
+          const scannedItemsResponse = await fetch(`${API_BASE}/scanned-items`);
+          const scannedItemsData = await scannedItemsResponse.json();
+          setScannedItems(
+            scannedItemsData.items.map((item) => ({
+              ...item,
+              key: item.label_id + item.timestamp,
+            }))
+          );
+        }
       } catch (err) {
-        message.error("Failed to fetch drone status");
+        // Only show error message if connected (to avoid spam when disconnected)
+        if (connected) {
+          message.error("Failed to fetch drone status");
+        } else {
+          setError(
+            "Attempting to connect... Please ensure Tello WiFi is connected."
+          );
+        }
       }
     };
 
+    // Set up interval for status polling
     const intervalId = setInterval(fetchData, 1000);
 
-    // Add global update function
-    window.updateScannedItems = (updatedItems) => {
-      setScannedItems(
-        updatedItems.map((item) => ({
-          ...item,
-          key: item.label_id + item.timestamp,
-        }))
-      );
-    };
-
+    // Cleanup on unmount or when API_BASE changes
     return () => {
       clearInterval(intervalId);
-      delete window.updateScannedItems;
     };
-  }, [API_BASE]);
+  }, [API_BASE, connected]); // Added 'connected' to dependencies
+
+  // Add this additional effect to handle disconnection
+  useEffect(() => {
+    if (!connected) {
+      // Keep the existing scanned items when disconnected
+      // Don't clear them automatically
+      setQrResult(""); // Clear QR result when disconnected
+    }
+  }, [connected]);
 
   const fetchFlightSessions = async () => {
     try {
