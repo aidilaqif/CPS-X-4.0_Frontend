@@ -22,6 +22,8 @@ const AutoPilot = () => {
   const [scannedItems, setScannedItems] = useState([]);
   const [flightSessions, setFlightSessions] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [isStoppingAutopilot, setIsStoppingAutopilot] = useState(false);
+  const [emergencyStopInProgress, setEmergencyStopInProgress] = useState(false);
 
   const API_BASE = process.env.REACT_APP_API_URL;
   const CPS_API_BASE = process.env.REACT_APP_API_BASE_URL;
@@ -254,15 +256,31 @@ const AutoPilot = () => {
   };
 
   const stopAutopilot = async () => {
-    try {
-      await fetch(`${API_BASE}/autopilot/stop_autopilot`, {
-        method: "POST",
-      });
-      setIsExecuting(false);
-      setError("Autopilot stopped");
-      setTimeout(() => setError(""), 3000);
-    } catch (err) {
-      setError("Failed to stop autopilot");
+    if (isExecuting) {
+      setIsStoppingAutopilot(true);
+      try {
+        // First try to stop autopilot gracefully
+        const response = await fetch(`${API_BASE}/autopilot/stop_autopilot`, {
+          method: "POST",
+        });
+        const data = await response.json();
+
+        if (data.status === "success") {
+          setIsExecuting(false);
+          message.success("AutoPilot stopped successfully");
+        } else {
+          throw new Error("Failed to stop autopilot");
+        }
+      } catch (err) {
+        console.error("Error stopping autopilot:", err);
+        message.error(
+          "Failed to stop autopilot gracefully, trying emergency stop"
+        );
+        // If graceful stop fails, try emergency stop
+        await emergencyStop();
+      } finally {
+        setIsStoppingAutopilot(false);
+      }
     }
   };
 
@@ -296,14 +314,29 @@ const AutoPilot = () => {
   };
 
   const emergencyStop = async () => {
+    setEmergencyStopInProgress(true);
     try {
-      await fetch(`${API_BASE}/force_emergency`, {
+      // First stop the autopilot execution
+      await fetch(`${API_BASE}/autopilot/stop_autopilot`, {
         method: "POST",
       });
-      setIsExecuting(false);
-      setError("EMERGENCY STOP ACTIVATED");
+
+      // Then trigger emergency stop
+      const response = await fetch(`${API_BASE}/force_emergency`, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setIsExecuting(false);
+        message.warning("Emergency stop activated");
+      } else {
+        throw new Error("Failed to execute emergency stop");
+      }
     } catch (err) {
-      setError("Failed to execute emergency stop");
+      console.error("Emergency stop error:", err);
+      message.error("Failed to execute emergency stop");
+    } finally {
+      setEmergencyStopInProgress(false);
     }
   };
 
