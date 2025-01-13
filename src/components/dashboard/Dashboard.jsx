@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Loader2, Package, Plane, MapPin, Clock } from "lucide-react";
 import { dashboardService } from "../../services/dashboard.service";
 import DistributionCharts from "./DistributionCharts";
-import FlightActivityChart from "./FlightActivityChart";
-import LocationChart from "./LocationChart";
 import LocationOverview from "./LocationOverview";
 import SummaryCard from "./SummaryCard";
 import "../../assets/styles/components/Dashboard.css";
