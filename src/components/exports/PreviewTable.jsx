@@ -11,8 +11,6 @@ const PreviewTable = ({ data, type }) => {
         return ['Label ID', 'PLT', 'Quantity', 'Work Order', 'Total', 'Status', 'Last Scan'];
       case 'flight_sessions':
         return ['Session ID', 'Date', 'Time of Day', 'Battery Start', 'Battery End', 'Commands', 'Scans', 'Duration'];
-      case 'scan_results':
-        return ['Session ID', 'Timestamp', 'Label ID', 'Success', 'Item Type', 'Location', 'Battery'];
       case 'items_status':
         return ['Label ID', 'Type', 'Status', 'Last Scan', 'Attempts', 'Success Rate', 'Location', 'Days Ago'];
       default:
@@ -91,17 +89,7 @@ const PreviewTable = ({ data, type }) => {
         return `${item.successful_scans || 0}/${item.items_scanned_count || 0}`;
       case 'Duration':
         return `${parseFloat(item.flight_duration || 0).toFixed(2)} min`;
-      
-      // Scan Results formatting
-      case 'Timestamp':
-        return formatDate(item.scan_timestamp);
-      case 'Success':
-        return item.scan_success ? 'Yes' : 'No';
-      case 'Item Type':
-        return item.item_type || '-';
-      case 'Battery':
-        return item.battery_level_at_scan ? `${item.battery_level_at_scan}%` : '-';
-      
+
       // Items Status formatting
       case 'Attempts':
         return item.scan_attempts || '0';

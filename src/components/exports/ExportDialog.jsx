@@ -6,7 +6,6 @@ import {
   X, 
   Eye, 
   Clock, 
-  Activity, 
   Database 
 } from 'lucide-react';
 import { exportService } from '../../services/export.service';
@@ -46,12 +45,6 @@ const ExportDialog = ({ isOpen, onClose, onExport }) => {
       title: "Flight Sessions",
       icon: <Clock size={20} />,
       fields: "Session ID, Date, Time Period, Battery Usage, Commands, Scans, Duration"
-    },
-    {
-      id: 'scan_results',
-      title: "Scan Results",
-      icon: <Activity size={20} />,
-      fields: "Session ID, Timestamp, Label ID, Success, Location, Battery Level"
     },
     {
       id: 'items_status',

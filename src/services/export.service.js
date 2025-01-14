@@ -33,7 +33,6 @@ export const exportService = {
         rolls: (data.rolls || []).slice(0, 5),
         pallets: (data.pallets || []).slice(0, 5),
         flight_sessions: (data.flight_sessions || []).slice(0, 5),
-        scan_results: (data.scan_results || []).slice(0, 5),
         items_status: (data.items_status || []).slice(0, 5)
       };
     } catch (error) {
@@ -90,33 +89,6 @@ export const exportService = {
         ...flightSessionsData
       ]);
 
-      // Scan Results Sheet
-      const scanResultsHeaders = [
-        'Session ID',
-        'Scan Timestamp',
-        'Label ID',
-        'Scan Success',
-        'Failure Reason',
-        'Item Type',
-        'Location',
-        'Battery Level (%)'
-      ];
-
-      const scanResultsData = (data.scan_results || []).map(scan => [
-        scan.session_id,
-        formatDateTime(scan.scan_timestamp),
-        scan.label_id || '',
-        scan.scan_success ? 'Yes' : 'No',
-        scan.scan_failure_reason || '',
-        scan.item_type || '',
-        scan.location_id || '',
-        scan.battery_level_at_scan || ''
-      ]);
-
-      const scanResultsSheet = XLSX.utils.aoa_to_sheet([
-        scanResultsHeaders,
-        ...scanResultsData
-      ]);
 
       // Items Status Sheet
       const itemsStatusHeaders = [
@@ -190,14 +162,13 @@ export const exportService = {
 
       // Add all sheets to workbook
       XLSX.utils.book_append_sheet(workbook, flightSessionsSheet, 'Flight Sessions');
-      XLSX.utils.book_append_sheet(workbook, scanResultsSheet, 'Scan Results');
       XLSX.utils.book_append_sheet(workbook, itemsStatusSheet, 'Items Status');
       XLSX.utils.book_append_sheet(workbook, itemSheet, 'Item');
       XLSX.utils.book_append_sheet(workbook, rollSheet, 'Roll');
       XLSX.utils.book_append_sheet(workbook, palletSheet, 'FG Pallet');
 
       // Apply sheet styling
-      ['Flight Sessions', 'Scan Results', 'Items Status', 'Item', 'Roll', 'FG Pallet'].forEach(sheetName => {
+      ['Flight Sessions', 'Items Status', 'Item', 'Roll', 'FG Pallet'].forEach(sheetName => {
         const sheet = workbook.Sheets[sheetName];
         
         // Set column widths
