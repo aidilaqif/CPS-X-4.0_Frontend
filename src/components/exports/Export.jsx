@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { FileDown, Loader2, Clock, Database } from "lucide-react";
+import { FileDown, Loader2, Clock, Database, BotIcon } from "lucide-react";
 import { exportService } from "../../services/export.service";
 import ExportDialog from "./ExportDialog";
 import PreviewTable from "./PreviewTable";
@@ -71,23 +71,23 @@ const Export = () => {
             </div>
         );
     }
-
     return (
         <div className="export-container">
             {/* Header Section */}
             <div className="export-header">
                 <div className="export-title">
-                    <FileDown className="w-6 h-6" />
-                    <h1>Export Data</h1>
+                    <BotIcon className="w-6 h-6" />
+                    <h1>Data Analysis</h1>
                 </div>
-                <button
-                    onClick={() => setDialogOpen(true)}
-                    className="export-button export-button-primary"
-                >
-                    <FileDown className="w-4 h-4" /> Export to Excel
-                </button>
             </div>
             {error && <div className="export-error">{error}</div>}
+
+            {/* AI Analysis Section */}
+            <div className="export-preview-section mt-8">
+                <h3>AI Analysis</h3>
+                <AIAnalysis />
+            </div>
+
             {/* Preview Section */}
             {previewData && (
                 <div className="export-preview-tabs">
@@ -124,10 +124,15 @@ const Export = () => {
                     </div>
                 </div>
             )}
-            {/* AI Analysis Section */}
-            <div className="export-preview-section mt-8">
-                <h3>AI Analysis</h3>
-                <AIAnalysis />
+
+            {/* Export Button */}
+            <div className="export-footer">
+                <button
+                    onClick={() => setDialogOpen(true)}
+                    className="export-button export-button-primary"
+                >
+                    <FileDown className="w-4 h-4" /> Export to Excel
+                </button>
             </div>
 
             {/* Export Dialog */}

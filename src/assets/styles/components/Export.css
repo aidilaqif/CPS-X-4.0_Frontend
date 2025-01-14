@@ -40,13 +40,13 @@
   }
   
   .export-button-primary {
-    background-color: var(--primary-color);
+    background-color: #05874d;
     color: white;
     border: none;
   }
   
   .export-button-primary:hover {
-    background-color: var(--primary-color-dark);
+    background-color: #07a35d;
   }
   
   .export-button-secondary {
