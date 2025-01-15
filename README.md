@@ -3,7 +3,8 @@
 ## Overview
 CPS Dragonfly Web Dashboard is a comprehensive React-based web application for managing industrial drone operations and inventory tracking. The platform provides real-time drone control, flight session analysis, inventory management, and advanced data visualization capabilities.
 
-[https://github.com/aidilaqif/cps_dragonfly_mobile_app]
+## Related Repositories
+- 📱 [Mobile Scanner App Repository](https://github.com/aidilaqif/cps_dragonfly_mobile_app)
 
 ## Features 🌟
 
