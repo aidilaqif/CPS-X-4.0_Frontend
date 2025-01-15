@@ -46,21 +46,25 @@ export const analysisService = {
       // Check session storage first
       const cachedData = getSessionCache('battery');
       if (cachedData) {
-        console.log('Using cached battery analysis data');
         return cachedData;
       }
-
-      const response = await fetch(endpoints.analysis.batteryEfficiency);
+  
+      const response = await fetch(`${endpoints.analysis.batteryEfficiency}`);
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const data = await response.json();
-      
+  
       // Cache the response
       setSessionCache('battery', data);
-      return data;
-
+  
+      return {
+        metrics: data.metrics,
+        timeSeriesData: data.timeSeriesData,
+        analysis: data.analysis
+      };
     } catch (err) {
       console.error('Battery efficiency analysis error:', err);
       throw new Error('Failed to fetch battery efficiency data');

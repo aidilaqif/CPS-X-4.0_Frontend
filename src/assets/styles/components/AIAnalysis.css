@@ -1,3 +1,77 @@
+.battery-analysis-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.battery-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.metric-card h4 {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.metric-card .metric-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+}
+
+.metric-card .metric-value.negative {
+  color: #ef4444;
+}
+
+.metric-card .metric-value.positive {
+  color: #22c55e;
+}
+
+.metric-card .metric-label {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.battery-charts-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.chart-wrapper {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.chart-wrapper h4 {
+  color: #1e293b;
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+}
+
+@media (min-width: 1024px) {
+  .battery-charts-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
 .ai-analysis {
   padding: 1.5rem;
   background-color: #f8fafc;
