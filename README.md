@@ -20,7 +20,6 @@ CPS Dragonfly Web Dashboard is a comprehensive React-based web application for m
 - **AutoPilot Mode**:
   - Flight session management
   - Predefined flight patterns
-  - Session recording and playback
   - Automated movement sequences
   - Star/favorite flight patterns
 
