@@ -154,7 +154,7 @@ npm start
 - Context for global state
 - Service layer for API calls
 
-## Features in Development 🛣️
+## Features to be Enhanced 🛣️
 
 - [ ] Enhanced movement analysis
 - [ ] Advanced battery optimization
