@@ -12,7 +12,8 @@ const Export = () => {
     const [error, setError] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [previewData, setPreviewData] = useState(null);
-    const [selectedSheet, setSelectedSheet] = useState('items_status'); // Default preview
+    const [selectedPreview, setSelectedPreview] = useState('items_status');
+    const [selectedTab, setSelectedTab] = useState('analysis');
 
     useEffect(() => {
         const fetchPreviewData = async () => {
@@ -73,76 +74,96 @@ const Export = () => {
     }
     return (
         <div className="export-container">
-            {/* Header Section */}
-            <div className="export-header">
-                <div className="export-title">
-                    <BotIcon className="w-6 h-6" />
-                    <h1>Data Analysis</h1>
-                </div>
+          {/* Header Section */}
+          <div className="export-header">
+            <div className="export-title">
+              <BotIcon className="w-6 h-6" />
+              <h1>Data Analysis</h1>
             </div>
-            {error && <div className="export-error">{error}</div>}
-
-            {/* AI Analysis Section */}
-            <div className="export-preview-section mt-8">
-                <h3>AI Analysis</h3>
-                <AIAnalysis />
-            </div>
-
-            {/* Preview Section */}
-            {previewData && (
-                <div className="export-preview-tabs">
+          </div>
+    
+          {error && <div className="export-error">{error}</div>}
+    
+          {/* Tab Selection */}
+          <div className="export-tabs">
+            <button
+              className={`export-tab ${selectedTab === 'analysis' ? 'active' : ''}`}
+              onClick={() => setSelectedTab('analysis')}
+            >
+              AI Analysis
+            </button>
+            <button
+              className={`export-tab ${selectedTab === 'preview' ? 'active' : ''}`}
+              onClick={() => setSelectedTab('preview')}
+            >
+              Data Preview
+            </button>
+          </div>
+    
+          {/* Content Section */}
+          <div className="export-content">
+            {selectedTab === 'analysis' ? (
+              <AIAnalysis />
+            ) : (
+              <>
+                {/* Preview Section */}
+                {previewData && (
+                  <div className="export-preview-wrapper">
                     <div className="export-preview-tab-list">
-                        {previewSections.map((section) => (
-                            <button
-                                key={section.id}
-                                className={`export-preview-tab ${selectedSheet === section.id ? 'active' : ''}`}
-                                onClick={() => setSelectedSheet(section.id)}
-                            >
-                                {section.icon}
-                                <div className="export-preview-tab-content">
-                                    <span className="export-preview-tab-title">{section.title}</span>
-                                    <span className="export-preview-tab-description">{section.description}</span>
-                                </div>
-                            </button>
-                        ))}
+                      {previewSections.map((section) => (
+                        <button
+                          key={section.id}
+                          className={`export-preview-tab ${selectedPreview === section.id ? 'active' : ''}`}
+                          onClick={() => setSelectedPreview(section.id)}
+                        >
+                          {section.icon}
+                          <div className="export-preview-tab-content">
+                            <span className="export-preview-tab-title">{section.title}</span>
+                            <span className="export-preview-tab-description">{section.description}</span>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-
+    
                     {/* Preview Content */}
                     <div className="export-preview-content">
-                        <div className="export-preview-section">
-                            <h3>{previewSections.find(s => s.id === selectedSheet)?.title}</h3>
-                            <PreviewTable
-                                data={previewData[selectedSheet]}
-                                type={selectedSheet}
-                            />
-                            <div className="export-preview-footer">
-                                <span>
-                                    Showing {previewData[selectedSheet]?.length || 0} records
-                                </span>
-                            </div>
+                      <div className="export-preview-section">
+                        <h3>{previewSections.find(s => s.id === selectedPreview)?.title}</h3>
+                        <PreviewTable
+                          data={previewData[selectedPreview]}
+                          type={selectedPreview}
+                        />
+                        <div className="export-preview-footer">
+                          <span>
+                            Showing {previewData[selectedPreview]?.length || 0} records
+                          </span>
                         </div>
+                      </div>
                     </div>
-                </div>
-            )}
-
-            {/* Export Button */}
-            <div className="export-footer">
-                <button
+                  </div>
+                )}
+    
+                {/* Export Button */}
+                <div className="export-footer">
+                  <button
                     onClick={() => setDialogOpen(true)}
                     className="export-button export-button-primary"
-                >
+                  >
                     <FileDown className="w-4 h-4" /> Export to Excel
-                </button>
-            </div>
-
-            {/* Export Dialog */}
-            <ExportDialog
-                isOpen={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                onExport={handleExport}
-            />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+    
+          {/* Export Dialog */}
+          <ExportDialog
+            isOpen={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            onExport={handleExport}
+          />
         </div>
-    );
-};
+      );
+    };
 
 export default Export;
