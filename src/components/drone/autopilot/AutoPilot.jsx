@@ -5,6 +5,7 @@ import FlightLogs from "./FlightLogs";
 import { Card, Tabs, Select, Button, Tooltip, message } from "antd";
 import { Star, StarOff } from "lucide-react";
 import moment from "moment-timezone";
+import BatteryDashboard from "./BatteryDashboard";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -583,6 +584,9 @@ const AutoPilot = () => {
 
         <TabPane tab="Flight Logs" key="logs">
           <FlightLogs />
+        </TabPane>
+        <TabPane tab="Battery Analytics" key="battery">
+          <BatteryDashboard />
         </TabPane>
       </Tabs>
     </div>
