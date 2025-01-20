@@ -9,7 +9,7 @@ const AIAnalysis = () => {
   const [batteryAnalysis, setBatteryAnalysis] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const analysisRef = useRef(null);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     fetchAnalysis();
@@ -195,7 +195,7 @@ const AIAnalysis = () => {
 
   return (
     <div className="ai-analysis">
-      <div className="analysis-section" ref={analysisRef}>
+      <div className="analysis-section" ref={contentRef}>
         <div className="section-header">
           <Battery className="section-icon-battery" />
           <h3>Battery Efficiency</h3>
@@ -205,8 +205,9 @@ const AIAnalysis = () => {
         )}
         <div className="download-footer">
           <PDFDownload 
-            targetRef={analysisRef} 
+            targetRef={contentRef} 
             filename="battery_efficiency_analysis.pdf"
+            batteryData={batteryAnalysis}
           />
         </div>
       </div>

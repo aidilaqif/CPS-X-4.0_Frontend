@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { DownloadIcon, Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
-const PDFDownload = ({ targetRef, filename = 'analysis_report.pdf' }) => {
+const PDFDownload = ({ targetRef, filename = 'battery_efficiency_analysis.pdf' }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
 
   const handleDownload = async () => {
     if (!targetRef.current) {
-      console.error('No target element found');
+      setError('Content reference not found');
       return;
     }
 
@@ -15,41 +17,114 @@ const PDFDownload = ({ targetRef, filename = 'analysis_report.pdf' }) => {
     setError(null);
 
     try {
-      // Dynamically import the required libraries
-      const html2canvas = (await import('html2canvas')).default;
-      const { jsPDF } = await import('jspdf');
+      // Clone and prepare the content
+      const element = targetRef.current.cloneNode(true);
+      const container = document.createElement('div');
+      container.appendChild(element);
+      
+      // Style container
+      Object.assign(container.style, {
+        position: 'absolute',
+        left: '-9999px',
+        top: 0,
+        width: '1200px', // Increased width for better quality
+        backgroundColor: '#ffffff',
+        padding: '40px'
+      });
+      
+      document.body.appendChild(container);
 
-      const element = targetRef.current;
+      // Remove download button from clone
+      const downloadButton = container.querySelector('.download-footer');
+      if (downloadButton) {
+        downloadButton.remove();
+      }
+
+      // Ensure chart is rendered properly
+      const chartContainer = container.querySelector('.chart-wrapper');
+      if (chartContainer) {
+        Object.assign(chartContainer.style, {
+          height: '500px', // Increased height for better visibility
+          width: '100%',
+          marginBottom: '40px'
+        });
+      }
+
+      // Wait for charts to render
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Capture content
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         logging: true,
-        backgroundColor: '#ffffff'
+        width: 1200,
+        height: element.offsetHeight,
+        windowWidth: 1200,
+        onclone: (clonedDoc) => {
+          // Make all elements visible
+          const allElements = clonedDoc.getElementsByTagName('*');
+          for (let el of allElements) {
+            const style = window.getComputedStyle(el);
+            if (style.display === 'none') {
+              el.style.display = 'block';
+            }
+            if (style.visibility === 'hidden') {
+              el.style.visibility = 'visible';
+            }
+          }
+        }
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4',
+        compress: true
+      });
+
+      // PDF dimensions
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, imgWidth, imgHeight);
+      // Calculate the number of pages needed
+      const totalHeight = canvas.height;
+      const pageHeightInPx = (pageHeight / pageWidth) * canvas.width;
+      const totalPages = Math.ceil(totalHeight / pageHeightInPx);
 
-      // If the content is longer than one page
-      let heightLeft = imgHeight - pageHeight;
-      let position = -pageHeight;
+      // Add pages
+      for (let i = 0; i < totalPages; i++) {
+        if (i > 0) {
+          pdf.addPage();
+        }
 
-      while (heightLeft > 0) {
-        position = position - pageHeight;
-        pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        // Calculate the portion of the canvas to use for this page
+        const sourceY = i * pageHeightInPx;
+        const remainingHeight = totalHeight - sourceY;
+        const sourceHeight = Math.min(pageHeightInPx, remainingHeight);
+        
+        pdf.addImage(
+          canvas,
+          'JPEG',
+          0,
+          -sourceY * (pageHeight / pageHeightInPx), // Adjust y position
+          pageWidth,
+          (canvas.height * pageWidth) / canvas.width,
+          undefined,
+          'FAST'
+        );
       }
 
+      // Clean up
+      document.body.removeChild(container);
+
+      // Save PDF
       pdf.save(filename);
-      setIsGenerating(false);
     } catch (err) {
-      console.error('Error generating PDF:', err);
-      setError('Failed to generate PDF. Please try again.');
+      console.error('PDF generation error:', err);
+      setError(`Failed to generate PDF: ${err.message}`);
+    } finally {
       setIsGenerating(false);
     }
   };
