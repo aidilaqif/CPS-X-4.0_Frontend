@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Battery, ChevronRight } from 'lucide-react';
+import { Battery, ChevronRight, Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { analysisService } from '../../services/analysis.service';
 import PDFDownload from './PDFDownload';
@@ -8,6 +8,7 @@ import '../../assets/styles/components/AIAnalysis.css';
 const AIAnalysis = () => {
   const [batteryAnalysis, setBatteryAnalysis] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const analysisRef = useRef(null);
 
   useEffect(() => {
@@ -19,6 +20,7 @@ const AIAnalysis = () => {
 
   const fetchAnalysis = async () => {
     try {
+      setLoading(true);
       const [batteryData] = await Promise.all([
         analysisService.getBatteryEfficiency(),
       ]);
@@ -26,6 +28,8 @@ const AIAnalysis = () => {
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -165,6 +169,25 @@ const AIAnalysis = () => {
       </div>
     );
   };
+  if (loading) {
+    return (
+      <div className="analysis-loading">
+        <div className="loading-content">
+          <Loader2 className="loading-spinner" />
+          <p className="loading-text">Generating AI Analysis...</p>
+          <div className="loading-progress">
+            <div className="loading-bar">
+              <div className="loading-bar-fill"></div>
+            </div>
+            <p className="loading-description">
+              This may take a few moments while we analyze your data
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   if (error) {
     return <div className="analysis-error">Failed to fetch analysis data: {error}</div>;
