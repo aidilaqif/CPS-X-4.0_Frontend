@@ -434,7 +434,7 @@ const DroneInterface = () => {
         </div>
 
         {/* QR Result Card */}
-        <Card title="QR Code Detection" className="qr-result-card">
+        <Card title="QR Code and Barcode Detection" className="qr-result-card">
           <div className="qr-result">
             {qrResult ? (
               <div className="qr-content">
