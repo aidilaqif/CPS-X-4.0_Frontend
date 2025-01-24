@@ -42,6 +42,17 @@ const AutoPilot = () => {
         setBattery(statusData.battery);
         setQrResult(statusData.qr_result);
 
+        // Add this check for autopilot status
+        if (isExecuting) {
+          const autopilotResponse = await fetch(`${API_BASE}/autopilot/status`);
+          const autopilotData = await autopilotResponse.json();
+          if (!autopilotData.is_executing && isExecuting) {
+            setIsExecuting(false);
+            setError("Autopilot completed");
+            setTimeout(() => setError(""), 3000);
+          }
+        }
+
         // Only fetch scanned items if drone is connected
         if (statusData.connected) {
           const scannedItemsResponse = await fetch(`${API_BASE}/scanned-items`);
@@ -72,7 +83,7 @@ const AutoPilot = () => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [API_BASE, connected]); // Added 'connected' to dependencies
+  }, [API_BASE, connected, isExecuting]); // Added 'connected' to dependencies
 
   // Add this additional effect to handle disconnection
   useEffect(() => {
@@ -80,6 +91,9 @@ const AutoPilot = () => {
       // Keep the existing scanned items when disconnected
       // Don't clear them automatically
       setQrResult(""); // Clear QR result when disconnected
+      setIsExecuting(false);
+      setIsStoppingAutopilot(false);
+      setEmergencyStopInProgress(false);
     }
   }, [connected]);
 
@@ -250,15 +264,20 @@ const AutoPilot = () => {
         setTimeout(() => setError(""), 3000);
       } else {
         setError(data.message);
+
+        setIsExecuting(false);
       }
     } catch (err) {
       setError("Failed to start autopilot");
+
+      setIsExecuting(false);
     }
   };
 
   const stopAutopilot = async () => {
     if (isExecuting) {
       setIsStoppingAutopilot(true);
+      setIsExecuting(false);
       try {
         // First try to stop autopilot gracefully
         const response = await fetch(`${API_BASE}/autopilot/stop_autopilot`, {
@@ -316,6 +335,7 @@ const AutoPilot = () => {
 
   const emergencyStop = async () => {
     setEmergencyStopInProgress(true);
+    setIsExecuting(false);
     try {
       // First stop the autopilot execution
       await fetch(`${API_BASE}/autopilot/stop_autopilot`, {
