@@ -64,29 +64,29 @@ const Dashboard = () => {
           icon={Package}
           title="Total Items"
           value={itemStats?.total || 0}
-          bgColor="bg-blue-100"
-          iconColor="text-blue-600"
+          style={{ backgroundColor: '#dbeafe' }} // bg-blue-100
+          iconStyle={{ color: '#2563eb' }} // text-blue-600
         />
         <SummaryCard
           icon={Plane}
           title="Flight Sessions"
           value={flightStats?.total || 0}
-          bgColor="bg-green-100"
-          iconColor="text-green-600"
+          style={{ backgroundColor: '#dcfce7' }} // bg-green-100
+          iconStyle={{ color: '#16a34a' }} // text-green-600
         />
         <SummaryCard
           icon={MapPin}
           title="Locations"
           value={locationStats?.total || 0}
-          bgColor="bg-yellow-100"
-          iconColor="text-yellow-600"
+          style={{ backgroundColor: '#fef9c3' }} // bg-yellow-100
+          iconStyle={{ color: '#ca8a04' }} // text-yellow-600
         />
         <SummaryCard
           icon={Clock}
           title="Total Commands"
           value={flightStats?.totalCommands || 0}
-          bgColor="bg-purple-100"
-          iconColor="text-purple-600"
+          style={{ backgroundColor: '#f3e8ff' }} // bg-purple-100
+          iconStyle={{ color: '#9333ea' }} // text-purple-600
         />
       </div>
 
